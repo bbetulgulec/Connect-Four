@@ -1,4 +1,4 @@
-import 'package:connect_four/presentations/home/view/home_screen.dart';
+import 'package:connect_four/app/home/view/home_screen.dart';
 import 'package:flutter/material.dart';
 
 void main() {
