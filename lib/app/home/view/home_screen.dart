@@ -1,4 +1,5 @@
 import 'package:connect_four/app/home/widget/home_material_button.dart';
+import 'package:connect_four/app/home/widget/setting_button.dart';
 import 'package:connect_four/core/extensions/asset_extension.dart';
 import 'package:connect_four/core/extensions/build_context_extensions.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -11,20 +12,45 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SizedBox(
-        width: double.infinity,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+      body: DecoratedBox(
+        decoration: BoxDecoration(color: null),
+        child: Stack(
           children: [
-            SvgPicture.asset(
-              AssetImages.iconText.path,
-              width: context.width120,
-              height: context.height120,
+            Positioned.fill(
+              child: Opacity(
+                opacity: 0.40,
+                child: SvgPicture.asset(
+                  AssetImages.background.path,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            SizedBox(
+              width: double.infinity,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+
+                children: [
+                  SvgPicture.asset(
+                    AssetImages.iconText.path,
+                    width: context.width120,
+                    height: context.height120,
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  HomeMaterialButton(text: "Yeni oyun"),
+
+                  const SizedBox(height: 16),
+
+                  HomeMaterialButton(text: "Devam Et"),
+
+                  const SizedBox(height: 60),
+                ],
+              ),
             ),
 
-            const SizedBox(height: 16),
-
-            HomeMaterialButton(),
+            Positioned(right: 16, bottom: 16, child: SettingButton()),
           ],
         ),
       ),

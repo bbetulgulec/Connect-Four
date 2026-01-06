@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 
 class HomeMaterialButton extends StatelessWidget {
-  const HomeMaterialButton({super.key});
+  final String text;
+  const HomeMaterialButton({super.key, required this.text});
 
   @override
   Widget build(BuildContext context) {
     return ClipPath(
       clipper: ArcadeButtonClipper(),
       child: Material(
-        color: Colors.blue,
+        color: const Color.fromARGB(255, 56, 28, 105),
+
+        //const Color(0xFFd1ffd7),
         child: InkWell(
           onTap: () {},
           child: SizedBox(
@@ -16,7 +19,7 @@ class HomeMaterialButton extends StatelessWidget {
             height: 70,
             child: Center(
               child: Text(
-                'YENİ OYUN',
+                text,
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 20,
@@ -35,19 +38,19 @@ class HomeMaterialButton extends StatelessWidget {
 class ArcadeButtonClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
-    const radius = 18.0;
-    const bottomInset = 30.0;
+    const radius = 20.0;
+    const bottomInset = 15.0;
 
     final path = Path();
 
     path.moveTo(radius, 0);
 
     // ÜST
-    path.lineTo(size.width - radius, 0);
+
     path.quadraticBezierTo(size.width, 0, size.width, radius);
 
     // SAĞ YAN
-    path.lineTo(size.width - bottomInset, size.height - radius);
+
     path.quadraticBezierTo(
       size.width - bottomInset,
       size.height,
@@ -56,7 +59,7 @@ class ArcadeButtonClipper extends CustomClipper<Path> {
     );
 
     // ALT
-    path.lineTo(bottomInset + radius, size.height);
+
     path.quadraticBezierTo(
       bottomInset,
       size.height,
@@ -65,7 +68,7 @@ class ArcadeButtonClipper extends CustomClipper<Path> {
     );
 
     // SOL YAN
-    path.lineTo(0, radius);
+
     path.quadraticBezierTo(0, 0, radius, 0);
 
     path.close();
