@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 
 class HomeMaterialButton extends StatelessWidget {
   final String text;
-  const HomeMaterialButton({super.key, required this.text});
+  final VoidCallback? onTap;
+  const HomeMaterialButton({super.key, required this.text, this.onTap});
 
   @override
   Widget build(BuildContext context) {
