@@ -1,4 +1,5 @@
-import 'package:connect_four/app/home/view/home_screen.dart';
+import 'package:connect_four/app/presentations/login/view/login_screen.dart';
+import 'package:connect_four/core/helper/nav_helper/navigation_helper.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -12,8 +13,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      navigatorKey: Navigation.navigationKey,
       theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.deepPurple)),
-      home: HomeScreen(),
+      home: LoginScreen(),
     );
   }
 }

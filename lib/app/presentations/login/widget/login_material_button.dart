@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-class HomeMaterialButton extends StatelessWidget {
+class LoginMaterialButton extends StatelessWidget {
   final String text;
   final VoidCallback? onTap;
-  const HomeMaterialButton({super.key, required this.text, this.onTap});
+  const LoginMaterialButton({super.key, required this.text, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +14,7 @@ class HomeMaterialButton extends StatelessWidget {
 
         //const Color(0xFFd1ffd7),
         child: InkWell(
-          onTap: () {},
+          onTap: onTap,
           child: SizedBox(
             width: 260,
             height: 70,

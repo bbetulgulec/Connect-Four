@@ -1,13 +1,15 @@
-import 'package:connect_four/app/home/widget/home_material_button.dart';
-import 'package:connect_four/app/home/widget/setting_button.dart';
+import 'package:connect_four/app/presentations/login/widget/login_material_button.dart';
+import 'package:connect_four/app/presentations/login/widget/setting_button.dart';
+import 'package:connect_four/app/presentations/main/view/main_screen.dart';
 import 'package:connect_four/core/extensions/asset_extension.dart';
 import 'package:connect_four/core/extensions/build_context_extensions.dart';
+import 'package:connect_four/core/helper/nav_helper/navigation_helper.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:flutter/material.dart';
 
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+class LoginScreen extends StatelessWidget {
+  const LoginScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -39,11 +41,16 @@ class HomeScreen extends StatelessWidget {
 
                   const SizedBox(height: 16),
 
-                  HomeMaterialButton(text: "Yeni oyun"),
+                  LoginMaterialButton(
+                    text: "Yeni oyun",
+                    onTap: () {
+                      Navigation.push(page: MainScreen());
+                    },
+                  ),
 
                   const SizedBox(height: 16),
 
-                  HomeMaterialButton(text: "Devam Et"),
+                  LoginMaterialButton(text: "Devam Et"),
 
                   const SizedBox(height: 60),
                 ],
