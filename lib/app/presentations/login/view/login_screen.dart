@@ -1,3 +1,4 @@
+import 'package:connect_four/app/presentations/login/widget/dialog_widget.dart';
 import 'package:connect_four/app/presentations/login/widget/material_button_widget.dart';
 import 'package:connect_four/app/presentations/login/widget/setting_button.dart';
 import 'package:connect_four/app/presentations/login/widget/title_widget.dart';
@@ -55,7 +56,16 @@ class LoginScreen extends StatelessWidget {
               child: Align(
                 alignment: AlignmentGeometry.topRight,
 
-                child: SettingButton(),
+                child: SettingButton(
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return DialogWidget();
+                      },
+                    );
+                  },
+                ),
               ),
             ),
           ],
