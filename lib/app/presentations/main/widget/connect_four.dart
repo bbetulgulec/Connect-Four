@@ -1,3 +1,4 @@
+import 'package:connect_four/core/service/ai_service.dart';
 import 'package:flame/components.dart';
 import 'package:flame/effects.dart';
 import 'package:flame/events.dart';
@@ -11,25 +12,26 @@ class ConnectFour extends FlameGame with TapCallbacks {
   late double cellSize;
   late Vector2 boardPosition;
 
+  int currentPlayer = 1; // 1 = sen, 2 = AI
+  bool isGameOver = false;
+
   // 0 = boş, 1 = kırmızı, 2 = yeşil
   final List<List<int>> board = List.generate(
     rows,
     (_) => List.filled(cols, 0),
   );
 
-  void _dropPiece(int col) {
-    // alttan yukarı doğru boş hücre ara
+  void _dropPiece(int col, int player) {
     for (int row = rows - 1; row >= 0; row--) {
       if (board[row][col] == 0) {
-        board[row][col] = 1; // kırmızı
-
-        _addPiece(row, col);
+        board[row][col] = player;
+        _addPiece(row, col, player);
         break;
       }
     }
   }
 
-  void _addPiece(int row, int col) {
+  void _addPiece(int row, int col, int player) {
     final targetPosition = Vector2(
       boardPosition.x + col * cellSize + cellSize / 2,
       boardPosition.y + row * cellSize + cellSize / 2,
@@ -38,27 +40,26 @@ class ConnectFour extends FlameGame with TapCallbacks {
     final piece = CircleComponent(
       radius: cellSize / 2 - 6,
       position: Vector2(targetPosition.x, boardPosition.y - cellSize * 1.5),
-      scale: Vector2.all(1.3),
       anchor: Anchor.center,
-      paint: Paint()..color = Colors.red,
+      paint: Paint()..color = player == 1 ? Colors.red : Colors.green,
     );
 
-    piece.add(
-      SequenceEffect([
-        ScaleEffect.to(Vector2.all(1.4), EffectController(duration: 0.2)),
-        MoveEffect.to(targetPosition, EffectController(duration: 0.8)),
-        ScaleEffect.to(Vector2.all(1.0), EffectController(duration: 0.4)),
-      ]),
-    );
+    piece.add(MoveEffect.to(targetPosition, EffectController(duration: 0.6)));
 
     add(piece);
+  }
+
+  Future<void> _makeAiMove() async {
+    final aiColumn = await AiService.getAiMove(board);
+    await Future.delayed(const Duration(milliseconds: 400));
+    _dropPiece(aiColumn, 2);
   }
 
   @override
   Color backgroundColor() => Colors.white;
 
   @override
-  void onTapDown(TapDownEvent event) {
+  void onTapDown(TapDownEvent event) async {
     final tap = event.localPosition;
 
     // Board dışıysa çık
@@ -72,7 +73,13 @@ class ConnectFour extends FlameGame with TapCallbacks {
     // Hangi kolon?
     final int col = ((tap.x - boardPosition.x) / cellSize).floor();
 
-    _dropPiece(col);
+    if (isGameOver) return;
+
+    _dropPiece(col, 1); // SEN
+
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    await _makeAiMove(); // AI
   }
 
   @override
