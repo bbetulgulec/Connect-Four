@@ -8,21 +8,7 @@ class SettingButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialButton(
       onPressed: () {},
-      child: Container(
-        height: context.height60,
-        width: context.width60,
-        decoration: BoxDecoration(
-          color: const Color.fromARGB(255, 56, 28, 105),
-          borderRadius: BorderRadius.circular(15.0),
-          border: Border.all(
-            width: 1.0,
-            style: BorderStyle.solid,
-            strokeAlign: BorderSide.strokeAlignInside,
-          ),
-        ),
-
-        child: Icon(color: Colors.white, Icons.settings),
-      ),
+      child: Icon(color: Colors.white, Icons.settings, size: 30),
     );
   }
 }
