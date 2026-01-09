@@ -105,6 +105,10 @@ class ConnectFour extends FlameGame with TapCallbacks {
       ),
     );
 
+    void dropPiece(int col) {
+      print("GAME");
+    }
+
     //  Delikler
     for (int row = 0; row < rows; row++) {
       for (int col = 0; col < cols; col++) {
