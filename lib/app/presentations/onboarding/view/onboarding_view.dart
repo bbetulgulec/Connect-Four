@@ -1,15 +1,95 @@
-import 'package:connect_four/core/extensions/asset_extension.dart';
 import 'package:flutter/material.dart';
 
-class OnboardingView extends StatelessWidget {
+import 'package:connect_four/app/common/widget/text_title.dart';
+import 'package:connect_four/app/presentations/onboarding/widget/elevated_button_widget.dart';
+import 'package:connect_four/app/presentations/onboarding/widget/page_view_dots.dart';
+import 'package:connect_four/app/data/models/onboardingItems/onboarding_data.dart';
+import 'package:connect_four/core/extensions/asset_extension.dart';
+
+class OnboardingView extends StatefulWidget {
   const OnboardingView({super.key});
+
+  @override
+  State<OnboardingView> createState() => _OnboardingViewState();
+}
+
+class _OnboardingViewState extends State<OnboardingView> {
+  final PageController _pageController = PageController();
+
+  void nextPage() {
+    if (_pageController.page! < onboardingItems.length - 1) {
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    } else {
+      // TODO: Home / Login geçişi
+    }
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
-          Positioned.fill(child: Image.asset(AssetImages.background.path)),
+          /// BACKGROUND
+          Positioned.fill(
+            child: Image.asset(
+              AssetImages.image.path(AssetType.png),
+              fit: BoxFit.cover,
+            ),
+          ),
+
+          /// PAGE VIEW
+          PageView.builder(
+            controller: _pageController,
+            itemCount: onboardingItems.length,
+            itemBuilder: (context, index) {
+              final item = onboardingItems[index];
+
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  TextTitle(title: item.text),
+                  const SizedBox(height: 60),
+                 SizedBox(
+  width: 240,
+  height: 240,
+  child: FittedBox(
+    fit: BoxFit.contain,
+    child: Image.asset(
+      item.image.path(AssetType.png),fit: BoxFit.contain,           // ← önemli
+    alignment: Alignment.center,
+    ),
+  ),
+),
+
+                ],
+              );
+            },
+          ),
+
+          /// BOTTOM CONTROLS
+          Positioned(
+            bottom: 50,
+            left: 0,
+            right: 0,
+            child: Column(
+              children: [
+                PageViewDots(pageController: _pageController),
+                const SizedBox(height: 60),
+                ElevatedButtonWidget(
+                  onPressed: nextPage,
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

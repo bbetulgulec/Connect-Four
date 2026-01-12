@@ -17,7 +17,7 @@ class LoginView extends StatelessWidget {
         child: Stack(
           children: [
             Positioned.fill(
-              child: Image.asset(AssetImages.background.path, fit: BoxFit.fill),
+              child: Image.asset(AssetImages.background.path(AssetType.png), fit: BoxFit.fill),
             ),
             SizedBox(
               width: double.infinity,

@@ -1,5 +1,19 @@
-enum AssetImages { background, onboarding_1 }
+enum AssetImages { background, onboarding_1, image, onboarding_2, onboarding_3
+}
+
+enum AssetType {
+  png,
+  svg,
+}
+
 
 extension AssetExtension on AssetImages {
-  String get path => 'assets/image/$name.png';
+  String path(AssetType type) {
+    return 'assets/image/$name.${type.name}';
+  }
 }
+
+
+
+
+
