@@ -1,3 +1,4 @@
+import 'package:connect_four/app/data/hive/game_storage.dart';
 import 'package:connect_four/app/presentations/main/widget/connect_four.dart';
 import 'package:connect_four/app/presentations/main/widget/scor_text_widget.dart';
 import 'package:connect_four/core/extensions/asset_extension.dart';
@@ -6,17 +7,21 @@ import 'package:flutter/material.dart';
 import 'package:connect_four/app/presentations/main/widget/dialog_widget.dart'; // ← DialogWidget'ı import et
 
 class MainScreen extends StatelessWidget {
-  const MainScreen({super.key});
+  MainScreen({super.key});
+
+  final game = ConnectFour();
+  final storage = GameStorage();
 
   @override
   Widget build(BuildContext context) {
-    final game = ConnectFour(); // ← game instance'ı burada yarat
+    final storage = GameStorage();
 
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage(AssetImages.image.path(.png)),
+            image: AssetImage(AssetImages.image.path(AssetType.png)),
+
             fit: BoxFit.cover,
           ),
         ),
@@ -26,7 +31,16 @@ class MainScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 30),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const [ScorText(), ScorText()],
+                children: [
+                  ScorText(
+                    title: 'SCORE',
+                    notifier: game.scoreNotifier, // 🔥 anlık
+                  ),
+                  ScorText(
+                    title: 'BEST',
+                    notifier: storage.bestScoreNotifier, // 🔥 en iyi (max)
+                  ),
+                ],
               ),
             ),
 

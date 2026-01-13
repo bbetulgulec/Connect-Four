@@ -1,22 +1,25 @@
 import 'package:flutter/material.dart';
 
 class ScorText extends StatelessWidget {
-  const ScorText({super.key});
+  final ValueNotifier<int> notifier;
+  final String title;
+
+  const ScorText({super.key, required this.notifier, required this.title});
 
   @override
   Widget build(BuildContext context) {
-    return RichText(
-      text: TextSpan(
-        text: 'Hello ',
-        style: DefaultTextStyle.of(context).style,
-        children: const <TextSpan>[
-          TextSpan(
-            text: 'bold',
-            style: TextStyle(fontWeight: FontWeight.bold),
+    return ValueListenableBuilder<int>(
+      valueListenable: notifier,
+      builder: (_, value, __) {
+        return Text(
+          '$title: $value',
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
           ),
-          TextSpan(text: ' world!'),
-        ],
-      ),
+        );
+      },
     );
   }
 }

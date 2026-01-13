@@ -1,6 +1,8 @@
+import 'package:connect_four/app/data/hive/game_storage.dart';
 import 'package:connect_four/app/presentations/main/component/board.dart';
 import 'package:connect_four/app/presentations/main/component/piece.dart';
-import 'package:connect_four/core/service/ai_service.dart';
+import 'package:connect_four/core/service/local_ai_services.dart';
+import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +10,7 @@ import 'package:flutter/material.dart';
 class ConnectFour extends FlameGame with TapCallbacks {
   static const int rows = 8;
   static const int cols = 6;
+  bool isPlayerTurn = true;
 
   late double cellSize;
   late Vector2 boardPosition;
@@ -25,6 +28,9 @@ class ConnectFour extends FlameGame with TapCallbacks {
   int player2Score = 0;
 
   final List<Piece> pieces = []; // ← Yeni liste ekle
+  final GameStorage _storage = GameStorage();
+
+  final ValueNotifier<int> scoreNotifier = ValueNotifier<int>(0);
 
   void resetGame() {
     // Tahtayı sıfırla
@@ -42,6 +48,10 @@ class ConnectFour extends FlameGame with TapCallbacks {
 
     isGameOver = false;
     currentPlayer = 1;
+
+    player1Score = 0;
+    isPlayerTurn = true;
+    scoreNotifier.value = 0;
   }
 
   void _dropPiece(int col, int player) {
@@ -50,22 +60,24 @@ class ConnectFour extends FlameGame with TapCallbacks {
         board[row][col] = player;
         _addPiece(row, col, player);
 
-        // Kazanan kontrolü
+        // 🔥 TAŞ ATTIKÇA PUAN
+        if (player == 1) {
+          player1Score++;
+          scoreNotifier.value = player1Score; // 🔥 üst UI güncellenir
+        }
+
         if (_checkWin(player)) {
           isGameOver = true;
+          final isWin = player == 1;
 
-          // Skoru güncelle
-          if (player == 1) {
-            player1Score++;
-          } else {
-            player2Score++;
-          }
+          _storage.onGameFinished(
+            isWin: isWin,
+            score: player1Score, // 🔥 ARTAN DEĞER
+          );
 
-          // Dialog göster
-          overlays.add(player == 1 ? 'WinOverlay' : 'LoseOverlay');
-
-          print(player == 1 ? "Sen kazandın!" : "AI kazandı!");
+          overlays.add(isWin ? 'WinOverlay' : 'LoseOverlay');
         }
+
         break;
       }
     }
@@ -94,9 +106,16 @@ class ConnectFour extends FlameGame with TapCallbacks {
   }
 
   Future<void> _makeAiMove() async {
-    final aiColumn = await AiService.getAiMove(board);
     await Future.delayed(const Duration(milliseconds: 400));
+
+    if (isGameOver) return;
+
+    final aiColumn = LocalAiService.getBestMove(board);
     _dropPiece(aiColumn, 2);
+
+    if (!isGameOver) {
+      isPlayerTurn = true; // 🔓 tekrar sen
+    }
   }
 
   @override
@@ -117,9 +136,10 @@ class ConnectFour extends FlameGame with TapCallbacks {
     // Hangi kolon?
     final int col = ((tap.x - boardPosition.x) / cellSize).floor();
 
-    if (isGameOver) return;
+    if (isGameOver || !isPlayerTurn) return;
 
     _dropPiece(col, 1); // SEN
+    isPlayerTurn = false;
 
     await Future.delayed(const Duration(milliseconds: 500));
 

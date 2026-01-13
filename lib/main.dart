@@ -1,8 +1,18 @@
+import 'package:connect_four/app/data/hive/game_progress.dart';
 import 'package:connect_four/app/presentations/onboarding/view/onboarding_view.dart';
 import 'package:connect_four/core/helper/nav_helper/navigation_helper.dart';
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Hive.initFlutter();
+
+  Hive.registerAdapter(GameProgressAdapter());
+
+  await Hive.openBox<GameProgress>('game');
+
   runApp(const MyApp());
 }
 
@@ -14,7 +24,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       navigatorKey: Navigation.navigationKey,
-      theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.deepPurple)),
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+      ),
       home: OnboardingView(),
     );
   }
