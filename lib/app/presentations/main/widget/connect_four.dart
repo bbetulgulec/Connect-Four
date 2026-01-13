@@ -1,6 +1,6 @@
+import 'package:connect_four/app/presentations/main/component/board.dart';
+import 'package:connect_four/app/presentations/main/component/piece.dart';
 import 'package:connect_four/core/service/ai_service.dart';
-import 'package:flame/components.dart';
-import 'package:flame/effects.dart';
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
@@ -21,11 +21,51 @@ class ConnectFour extends FlameGame with TapCallbacks {
     (_) => List.filled(cols, 0),
   );
 
+  int player1Score = 0;
+  int player2Score = 0;
+
+  final List<Piece> pieces = []; // ← Yeni liste ekle
+
+  void resetGame() {
+    // Tahtayı sıfırla
+    for (int r = 0; r < rows; r++) {
+      for (int c = 0; c < cols; c++) {
+        board[r][c] = 0;
+      }
+    }
+
+    // Tüm Piece'leri kaldır
+    for (final piece in pieces) {
+      piece.removeFromParent(); // veya remove(piece)
+    }
+    pieces.clear(); // listeyi boşalt
+
+    isGameOver = false;
+    currentPlayer = 1;
+  }
+
   void _dropPiece(int col, int player) {
     for (int row = rows - 1; row >= 0; row--) {
       if (board[row][col] == 0) {
         board[row][col] = player;
         _addPiece(row, col, player);
+
+        // Kazanan kontrolü
+        if (_checkWin(player)) {
+          isGameOver = true;
+
+          // Skoru güncelle
+          if (player == 1) {
+            player1Score++;
+          } else {
+            player2Score++;
+          }
+
+          // Dialog göster
+          overlays.add(player == 1 ? 'WinOverlay' : 'LoseOverlay');
+
+          print(player == 1 ? "Sen kazandın!" : "AI kazandı!");
+        }
         break;
       }
     }
@@ -37,16 +77,20 @@ class ConnectFour extends FlameGame with TapCallbacks {
       boardPosition.y + row * cellSize + cellSize / 2,
     );
 
-    final piece = CircleComponent(
-      radius: cellSize / 2 - 6,
-      position: Vector2(targetPosition.x, boardPosition.y - cellSize * 1.5),
-      anchor: Anchor.center,
-      paint: Paint()..color = player == 1 ? Colors.red : Colors.green,
+    final startPosition = Vector2(
+      targetPosition.x,
+      boardPosition.y - cellSize * 1.5, // Yukarıdan başlama
     );
 
-    piece.add(MoveEffect.to(targetPosition, EffectController(duration: 0.6)));
+    final piece = Piece(
+      player: player,
+      startPosition: startPosition,
+      targetPosition: targetPosition,
+      cellSize: cellSize,
+    );
 
     add(piece);
+    pieces.add(piece); // ← buraya ekle
   }
 
   Future<void> _makeAiMove() async {
@@ -56,7 +100,7 @@ class ConnectFour extends FlameGame with TapCallbacks {
   }
 
   @override
-  Color backgroundColor() => Colors.white;
+  Color backgroundColor() => Colors.transparent;
 
   @override
   void onTapDown(TapDownEvent event) async {
@@ -82,44 +126,75 @@ class ConnectFour extends FlameGame with TapCallbacks {
     await _makeAiMove(); // AI
   }
 
+  bool _checkWin(int player) {
+    // Dikey
+    for (int col = 0; col < cols; col++) {
+      for (int row = 0; row <= rows - 4; row++) {
+        if (board[row][col] == player &&
+            board[row + 1][col] == player &&
+            board[row + 2][col] == player &&
+            board[row + 3][col] == player) {
+          return true;
+        }
+      }
+    }
+
+    // Yatay
+    for (int row = 0; row < rows; row++) {
+      for (int col = 0; col <= cols - 4; col++) {
+        if (board[row][col] == player &&
+            board[row][col + 1] == player &&
+            board[row][col + 2] == player &&
+            board[row][col + 3] == player) {
+          return true;
+        }
+      }
+    }
+
+    // Çapraz (sol üst → sağ alt)
+    for (int row = 0; row <= rows - 4; row++) {
+      for (int col = 0; col <= cols - 4; col++) {
+        if (board[row][col] == player &&
+            board[row + 1][col + 1] == player &&
+            board[row + 2][col + 2] == player &&
+            board[row + 3][col + 3] == player) {
+          return true;
+        }
+      }
+    }
+
+    // Çapraz (sağ üst → sol alt)
+    for (int row = 0; row <= rows - 4; row++) {
+      for (int col = 3; col < cols; col++) {
+        if (board[row][col] == player &&
+            board[row + 1][col - 1] == player &&
+            board[row + 2][col - 2] == player &&
+            board[row + 3][col - 3] == player) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
   @override
   Future<void> onLoad() async {
-    //  hücre boyutunu ekran genişliğine göre ayarla
-    cellSize = size.x / cols;
-
+    cellSize = size.x / (cols + 1);
     final boardWidth = cellSize * cols;
     final boardHeight = cellSize * rows;
 
-    //  board'u tam ortala
     boardPosition = Vector2(
       (size.x - boardWidth) / 2,
       (size.y - boardHeight) / 2,
     );
-
-    //  Board
     add(
-      RectangleComponent(
-        size: Vector2(boardWidth, boardHeight),
+      Board(
+        rows: rows,
+        cols: cols,
+        cellSize: cellSize,
         position: boardPosition,
-        paint: Paint()..color = Colors.blue,
       ),
     );
-
-    //  Delikler
-    for (int row = 0; row < rows; row++) {
-      for (int col = 0; col < cols; col++) {
-        final x = boardPosition.x + col * cellSize + cellSize / 2;
-        final y = boardPosition.y + row * cellSize + cellSize / 2;
-
-        add(
-          CircleComponent(
-            radius: cellSize / 2 - 4,
-            position: Vector2(x, y),
-            anchor: Anchor.center,
-            paint: Paint()..color = Colors.white,
-          ),
-        );
-      }
-    }
   }
 }

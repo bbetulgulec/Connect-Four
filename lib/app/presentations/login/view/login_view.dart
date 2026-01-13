@@ -2,7 +2,9 @@ import 'package:connect_four/app/presentations/login/widget/dialog_widget.dart';
 import 'package:connect_four/app/presentations/login/widget/material_button_widget.dart';
 import 'package:connect_four/app/presentations/login/widget/setting_button.dart';
 import 'package:connect_four/app/presentations/login/widget/title_widget.dart';
+import 'package:connect_four/app/presentations/main/view/main_screen.dart';
 import 'package:connect_four/core/extensions/asset_extension.dart';
+import 'package:connect_four/core/helper/nav_helper/navigation_helper.dart';
 
 import 'package:flutter/material.dart';
 
@@ -17,7 +19,10 @@ class LoginView extends StatelessWidget {
         child: Stack(
           children: [
             Positioned.fill(
-              child: Image.asset(AssetImages.background.path(AssetType.png), fit: BoxFit.fill),
+              child: Image.asset(
+                AssetImages.background.path(AssetType.png),
+                fit: BoxFit.fill,
+              ),
             ),
             SizedBox(
               width: double.infinity,
@@ -42,7 +47,7 @@ class LoginView extends StatelessWidget {
                     text: "Yeni Oyun",
                     color: Colors.yellow,
                     onPressed: () {
-                      // işlem
+                      Navigation.pushAndRemoveAll(page: MainScreen());
                     },
                   ),
 

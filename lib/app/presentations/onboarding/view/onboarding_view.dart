@@ -1,3 +1,5 @@
+import 'package:connect_four/app/presentations/login/view/login_view.dart';
+import 'package:connect_four/core/helper/nav_helper/navigation_helper.dart';
 import 'package:flutter/material.dart';
 
 import 'package:connect_four/app/common/widget/text_title.dart';
@@ -15,6 +17,7 @@ class OnboardingView extends StatefulWidget {
 
 class _OnboardingViewState extends State<OnboardingView> {
   final PageController _pageController = PageController();
+  int currentPage = 0;
 
   void nextPage() {
     if (_pageController.page! < onboardingItems.length - 1) {
@@ -23,8 +26,23 @@ class _OnboardingViewState extends State<OnboardingView> {
         curve: Curves.easeInOut,
       );
     } else {
-      // TODO: Home / Login geçişi
+      Navigation.pushReplace(page: LoginView());
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    // PageView sayfa değişimini dinle
+    _pageController.addListener(() {
+      int newPage = _pageController.page!.round();
+      if (currentPage != newPage) {
+        setState(() {
+          currentPage = newPage;
+        });
+      }
+    });
   }
 
   @override
@@ -58,18 +76,18 @@ class _OnboardingViewState extends State<OnboardingView> {
                 children: [
                   TextTitle(title: item.text),
                   const SizedBox(height: 60),
-                 SizedBox(
-  width: 240,
-  height: 240,
-  child: FittedBox(
-    fit: BoxFit.contain,
-    child: Image.asset(
-      item.image.path(AssetType.png),fit: BoxFit.contain,           // ← önemli
-    alignment: Alignment.center,
-    ),
-  ),
-),
-
+                  SizedBox(
+                    width: 240,
+                    height: 240,
+                    child: FittedBox(
+                      fit: BoxFit.contain,
+                      child: Image.asset(
+                        item.image.path(AssetType.png),
+                        fit: BoxFit.contain, // ← önemli
+                        alignment: Alignment.center,
+                      ),
+                    ),
+                  ),
                 ],
               );
             },
@@ -86,6 +104,11 @@ class _OnboardingViewState extends State<OnboardingView> {
                 const SizedBox(height: 60),
                 ElevatedButtonWidget(
                   onPressed: nextPage,
+                  text:
+                      (_pageController.hasClients &&
+                          _pageController.page == onboardingItems.length - 1)
+                      ? "Başlayalım"
+                      : "Sonraki",
                 ),
               ],
             ),
