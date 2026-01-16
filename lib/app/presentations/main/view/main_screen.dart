@@ -25,55 +25,55 @@ class MainScreen extends StatelessWidget {
             fit: BoxFit.cover,
           ),
         ),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 30),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  ScorText(
-                    title: 'SCORE',
-                    notifier: game.scoreNotifier, // 🔥 anlık
-                  ),
-                  ScorText(
-                    title: 'BEST',
-                    notifier: storage.bestScoreNotifier, // 🔥 en iyi (max)
-                  ),
-                ],
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 40.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    ScorText(title: 'SCORE', notifier: game.scoreNotifier),
+                    ScorText(
+                      title: 'BEST',
+                      notifier: storage.bestScoreNotifier,
+                    ),
+                  ],
+                ),
               ),
-            ),
 
-            Expanded(
-              child: GameWidget<ConnectFour>(
-                game: game,
-                overlayBuilderMap: {
-                  'WinOverlay': (BuildContext context, ConnectFour game) {
-                    return DialogWidget(
-                      isWin: true,
-                      player1Score: game.player1Score,
-                      player2Score: game.player2Score,
-                      onPlayAgain: () {
-                        game.overlays.remove('WinOverlay');
-                        game.resetGame();
-                      },
-                    );
+              Expanded(
+                child: GameWidget<ConnectFour>(
+                  game: game,
+                  overlayBuilderMap: {
+                    'WinOverlay': (BuildContext context, ConnectFour game) {
+                      return DialogWidget(
+                        isWin: true,
+                        player1Score: game.player1Score,
+                        player2Score: game.player2Score,
+                        onPlayAgain: () {
+                          game.overlays.remove('WinOverlay');
+                          game.resetGame();
+                        },
+                      );
+                    },
+                    'LoseOverlay': (BuildContext context, ConnectFour game) {
+                      return DialogWidget(
+                        isWin: false,
+                        player1Score: game.player1Score,
+                        player2Score: game.player2Score,
+                        onPlayAgain: () {
+                          game.overlays.remove('LoseOverlay');
+                          game.resetGame();
+                        },
+                      );
+                    },
                   },
-                  'LoseOverlay': (BuildContext context, ConnectFour game) {
-                    return DialogWidget(
-                      isWin: false,
-                      player1Score: game.player1Score,
-                      player2Score: game.player2Score,
-                      onPlayAgain: () {
-                        game.overlays.remove('LoseOverlay');
-                        game.resetGame();
-                      },
-                    );
-                  },
-                },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

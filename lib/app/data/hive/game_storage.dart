@@ -29,7 +29,6 @@ class GameStorage {
     return _box.get(_key)!;
   }
 
-  /// Oyun bittiğinde çağrılacak
   void onGameFinished({required bool isWin, required int score}) {
     final data = _data;
 

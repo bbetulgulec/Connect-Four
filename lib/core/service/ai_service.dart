@@ -11,7 +11,7 @@ class AiService {
       headers: {"Content-Type": "application/json"},
       body: jsonEncode({"board": board}),
     );
-
+ 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       return data["column"];
