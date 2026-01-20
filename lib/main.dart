@@ -1,6 +1,5 @@
 import 'package:connect_four/app/data/hive/game_progress.dart';
 import 'package:connect_four/app/presentations/main/view/main_screen.dart';
-import 'package:connect_four/app/presentations/onboarding/view/onboarding_view.dart';
 import 'package:connect_four/core/helper/nav_helper/navigation_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';

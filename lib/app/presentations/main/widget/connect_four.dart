@@ -2,7 +2,6 @@ import 'package:connect_four/app/data/hive/game_storage.dart';
 import 'package:connect_four/app/presentations/main/component/board.dart';
 import 'package:connect_four/app/presentations/main/component/piece.dart';
 import 'package:connect_four/core/service/local_ai_services.dart';
-import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
@@ -15,8 +14,12 @@ class ConnectFour extends FlameGame with TapCallbacks {
   late double cellSize;
   late Vector2 boardPosition;
 
-  int currentPlayer = 1; // 1 = sen, 2 = AI
+  int currentPlayer = 1; 
   bool isGameOver = false;
+  bool isExplosionMode = false;
+
+   bool isSingleExplosion = false;
+  bool isRowColumnExplosion = false;
 
   // 0 = boş, 1 = kırmızı, 2 = yeşil
   final List<List<int>> board = List.generate(
@@ -99,10 +102,23 @@ class ConnectFour extends FlameGame with TapCallbacks {
       startPosition: startPosition,
       targetPosition: targetPosition,
       cellSize: cellSize,
+      col: col,
+      row: row,
+      isEnemy: player==2,
+      game: this
     );
 
     add(piece);
     pieces.add(piece); // ← buraya ekle
+  }
+
+  Piece? getEnemyPieceAt({required int col, required int row}) {
+    for (final piece in pieces) {
+      if (piece.col == col && piece.row == row && piece.isEnemy) {
+        return piece;
+      }
+    }
+    return null;
   }
 
   Future<void> _makeAiMove() async {

@@ -10,7 +10,7 @@ class ScorText extends StatelessWidget {
   Widget build(BuildContext context) {
     return ValueListenableBuilder<int>(
       valueListenable: notifier,
-      builder: (_, value, __) {
+      builder: (_, value, _) {
         return Text(
           '$title: $value',
           style: const TextStyle(

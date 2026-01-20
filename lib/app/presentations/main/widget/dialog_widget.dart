@@ -3,18 +3,17 @@ import 'dart:math' as math;
 import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 
+enum GameResult { win, lose, noSpace }
+
 class DialogWidget extends StatefulWidget {
-  final bool isWin;
-  final int player1Score;
-  final int player2Score;
+  final GameResult result;
   final VoidCallback onPlayAgain;
 
   const DialogWidget({
     super.key,
-    required this.isWin,
-    required this.player1Score,
-    required this.player2Score,
+
     required this.onPlayAgain,
+    required this.result,
   });
 
   @override
@@ -31,10 +30,9 @@ class _DialogWidgetState extends State<DialogWidget> {
       duration: const Duration(seconds: 6),
     );
 
-    // Gecikmeyle başlatmak bazen daha güvenli olur
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (widget.isWin) _confettiController.play();
-    });
+    if (widget.result == GameResult.win) {
+      _confettiController.play();
+    }
   }
 
   @override
@@ -73,8 +71,31 @@ class _DialogWidgetState extends State<DialogWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final isWin = widget.isWin;
-    final buttonColor = isWin ? Colors.green : Colors.redAccent;
+    Color mainColor;
+    String title;
+    String subtitle;
+    String buttonText;
+
+    switch (widget.result) {
+      case GameResult.win:
+        mainColor = Colors.greenAccent;
+        title = "YOU WIN!";
+        subtitle = "Master of the tiles!\nYou dominated the board.";
+        buttonText = "PLAY AGAIN";
+        break;
+      case GameResult.lose:
+        mainColor = Colors.redAccent;
+        title = "GAME OVER";
+        subtitle = "Tactics failed this time.\nTry a new strategy!";
+        buttonText = "TRY AGAIN";
+        break;
+      case GameResult.noSpace:
+        mainColor = Colors.orangeAccent;
+        title = "NO SPACE!";
+        subtitle = "The board is full.\nIt's a tactical deadlock!";
+        buttonText = "RESET BOARD";
+        break;
+    }
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -85,7 +106,7 @@ class _DialogWidgetState extends State<DialogWidget> {
           // Ana kart
           Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 360, maxHeight: 420),
+              constraints: const BoxConstraints(maxWidth: 340, maxHeight: 400),
               child: Container(
                 padding: const EdgeInsets.all(32),
                 decoration: BoxDecoration(
@@ -93,21 +114,20 @@ class _DialogWidgetState extends State<DialogWidget> {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      const Color(0xFF0D1B2A).withOpacity(0.95),
-                      const Color(0xFF0D1B2A).withOpacity(0.85),
+                      const Color(0xFF0D1B2A).withAlpha(95),
+                      const Color(0xFF0D1B2A).withAlpha(85),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(32),
                   border: Border.all(
-                    color: isWin ? Colors.greenAccent : Colors.redAccent,
-                    width: 2.5,
+                    color: mainColor.withAlpha(50),
+                    width: 2,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: (isWin ? Colors.greenAccent : Colors.redAccent)
-                          .withOpacity(0.4),
-                      blurRadius: 40,
-                      spreadRadius: 10,
+                      color: mainColor.withAlpha(20),
+                      blurRadius: 30,
+                      spreadRadius: 5,
                     ),
                   ],
                 ),
@@ -116,26 +136,18 @@ class _DialogWidgetState extends State<DialogWidget> {
                   children: [
                     const SizedBox(height: 16),
                     Text(
-                      isWin ? "YOU WIN!" : "GAME OVER",
+                      title,
                       style: TextStyle(
                         fontSize: 48,
                         fontWeight: FontWeight.bold,
-                        color: isWin ? Colors.greenAccent : Colors.redAccent,
-                        shadows: [
-                          Shadow(
-                            blurRadius: 20,
-                            color: isWin ? Colors.green : Colors.red,
-                            offset: const Offset(0, 0),
-                          ),
-                        ],
+                        color: mainColor,
+                        shadows: [Shadow(color: mainColor, blurRadius: 15)],
                       ),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      isWin
-                          ? "Congratulations!\nYou connected four."
-                          : "Better luck next time.",
+                      subtitle,
                       style: const TextStyle(
                         fontSize: 20,
                         color: Colors.white,
@@ -144,26 +156,28 @@ class _DialogWidgetState extends State<DialogWidget> {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 40),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 60,
-                      child: ElevatedButton(
-                        onPressed: widget.onPlayAgain,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: buttonColor,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
+                    Expanded(
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: 60,
+                        child: ElevatedButton(
+                          onPressed: widget.onPlayAgain,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: mainColor,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            elevation: 10,
+                            shadowColor: mainColor.withAlpha(60),
                           ),
-                          elevation: 10,
-                          shadowColor: buttonColor.withOpacity(0.6),
-                        ),
-                        child: Text(
-                          isWin ? "PLAY AGAIN" : "TRY AGAIN",
-                          style: const TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.2,
+                          child: Text(
+                            buttonText,
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.2,
+                            ),
                           ),
                         ),
                       ),
@@ -176,7 +190,7 @@ class _DialogWidgetState extends State<DialogWidget> {
           ),
 
           // Confetti – tam ekran kaplasın diye Positioned.fill
-          if (isWin)
+          if (widget.result == GameResult.win)
             Positioned.fill(
               child: ConfettiWidget(
                 confettiController: _confettiController,

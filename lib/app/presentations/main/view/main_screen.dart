@@ -3,10 +3,9 @@ import 'package:connect_four/app/presentations/main/widget/connect_four.dart';
 import 'package:connect_four/app/presentations/main/widget/icon_widget.dart';
 import 'package:connect_four/app/presentations/main/widget/scor_text_widget.dart';
 import 'package:connect_four/core/extensions/asset_extension.dart';
-import 'package:connect_four/core/extensions/build_context_extensions.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
-import 'package:connect_four/app/presentations/main/widget/dialog_widget.dart'; // ← DialogWidget'ı import et
+import 'package:connect_four/app/presentations/main/widget/dialog_widget.dart'; 
 
 class MainScreen extends StatelessWidget {
   MainScreen({super.key});
@@ -57,9 +56,7 @@ class MainScreen extends StatelessWidget {
                   overlayBuilderMap: {
                     'WinOverlay': (BuildContext context, ConnectFour game) {
                       return DialogWidget(
-                        isWin: true,
-                        player1Score: game.player1Score,
-                        player2Score: game.player2Score,
+                        result: GameResult.win,
                         onPlayAgain: () {
                           game.overlays.remove('WinOverlay');
                           game.resetGame();
@@ -68,13 +65,20 @@ class MainScreen extends StatelessWidget {
                     },
                     'LoseOverlay': (BuildContext context, ConnectFour game) {
                       return DialogWidget(
-                        isWin: false,
-                        player1Score: game.player1Score,
-                        player2Score: game.player2Score,
+                        result: GameResult.lose,
                         onPlayAgain: () {
                           game.overlays.remove('LoseOverlay');
                           game.resetGame();
                         },
+                      );
+                    },
+                    'NoSpace': (BuildContext context, ConnectFour game) {
+                      return DialogWidget(
+                        onPlayAgain: () {
+                          game.overlays.remove('LoseOverlay');
+                          game.resetGame();
+                        },
+                        result: GameResult.noSpace,
                       );
                     },
                   },
@@ -83,14 +87,26 @@ class MainScreen extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
+                  // Tek taş kırma modu
                   IconWidget(
+                    onTap: () {
+                      game.isSingleExplosion = true;
+                      game.isRowColumnExplosion = false;
+                    },
                     iconPath: AssetImages.block_1explosion.path(AssetType.png),
                   ),
+
+                  // Satır ve sütun kırma modu
                   IconWidget(
+                    onTap: () {
+                      game.isSingleExplosion = false;
+                      game.isRowColumnExplosion = true;
+                    },
                     iconPath: AssetImages.column_1row_1deletion.path(
                       AssetType.png,
                     ),
                   ),
+
                   IconWidget(iconPath: AssetImages.swap.path(AssetType.png)),
                   IconWidget(
                     iconPath: AssetImages.undo_1move.path(AssetType.png),

@@ -4,12 +4,13 @@ class IconWidget extends StatelessWidget {
   final String iconPath;
   final double size;
   final BoxFit fit;
-
+  final VoidCallback? onTap;
   const IconWidget({
     super.key,
     required this.iconPath,
     this.size = 80,
     this.fit = BoxFit.contain,
+     this.onTap,
   });
 
   @override
@@ -17,7 +18,10 @@ class IconWidget extends StatelessWidget {
     return SizedBox(
       width: size,
       height: size,
-      child: Image.asset(iconPath, width: size, height: size, fit: fit),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Image.asset(iconPath, width: size, height: size, fit: fit),
+      ),
     );
   }
 }

@@ -1,10 +1,21 @@
+import 'package:connect_four/app/presentations/main/widget/connect_four.dart';
 import 'package:flame/components.dart';
 import 'package:flame/effects.dart';
+import 'package:flame/events.dart';
 import 'package:flutter/material.dart';
 
-class Piece extends PositionComponent {
+class Piece extends PositionComponent with TapCallbacks {
+  final int player;
+  final int col;
+  final int row;
+  final bool isEnemy;
+  final ConnectFour game;
   Piece({
     required this.player,
+    required this.col,
+    required this.row,
+    required this.isEnemy,
+    required this.game,
     required Vector2 startPosition,
     required Vector2 targetPosition,
     required double cellSize,
@@ -16,7 +27,6 @@ class Piece extends PositionComponent {
     final baseColor = player == 1 ? Colors.redAccent : Colors.greenAccent;
     final shadowColor = player == 1 ? Colors.red : Colors.green;
 
-    // Ana taş rengi (dış katman)
     add(
       CircleComponent(
         radius: (cellSize - 12) / 2,
@@ -26,7 +36,6 @@ class Piece extends PositionComponent {
       ),
     );
 
-    // İç gölge / karanlık katman (derinlik verir)
     add(
       CircleComponent(
         radius: (cellSize - 12) / 2 * 0.7,
@@ -36,18 +45,15 @@ class Piece extends PositionComponent {
       ),
     );
 
-    // Üst parlak katman (highlight / parlama efekti)
     add(
       CircleComponent(
         radius: (cellSize - 12) / 2 * 0.65,
         position: size / 2,
         anchor: Anchor.center,
-        paint: Paint()
-          ..color = baseColor.withAlpha(90), // hafif saydam parlaklık
+        paint: Paint()..color = baseColor.withAlpha(90),
       ),
     );
 
-    // Düşme animasyonu (bounceOut ile zıplama efekti)
     add(
       MoveEffect.to(
         targetPosition,
@@ -56,5 +62,35 @@ class Piece extends PositionComponent {
     );
   }
 
-  final int player;
+  void breakPiece() {
+    removeFromParent();
+  }
+
+  void breakAllRowAndColumn() {
+
+      final targetCol = col;
+      final targetRow = row;
+      for (final piece in game.pieces) {
+        if (piece.col == targetCol || piece.row == targetRow) {
+          piece.breakPiece();
+        }
+      }
+      game.isExplosionMode = false; // sadece 1 kez kır
+    
+  }
+
+  @override
+bool onTapDown(TapDownEvent event) {
+  if (isEnemy) {
+    if (game.isSingleExplosion) {
+      breakPiece();
+      game.isSingleExplosion = false; // sadece 1 kez kır
+    } else if (game.isRowColumnExplosion) {
+      breakAllRowAndColumn();
+      game.isRowColumnExplosion = false; // sadece 1 kez kır
+    }
+  }
+  return true;
+}
+
 }
