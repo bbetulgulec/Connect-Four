@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 
 class Piece extends PositionComponent with TapCallbacks {
   final int player;
-  final int col;
-  final int row;
+  int col;
+  int row;
   final bool isEnemy;
   final ConnectFour game;
   Piece({
@@ -63,34 +63,143 @@ class Piece extends PositionComponent with TapCallbacks {
   }
 
   void breakPiece() {
+    game.board[row][col] = 0;
+
     removeFromParent();
+
+    game.pieces.remove(this);
+
+    removeFromParent();
+
+    game.applyGravity();
+  }
+
+  void explode({VoidCallback? onComplete}) {
+    // 🔥 board datasını hemen temizle
+    game.board[row][col] = 0;
+    game.pieces.remove(this);
+
+    // 💥 önce büyü
+    add(
+      ScaleEffect.to(
+        Vector2.all(1.4),
+        EffectController(duration: 0.12, curve: Curves.easeOut),
+        onComplete: () {
+          // 💨 sonra küçülerek yok ol
+          add(
+            ScaleEffect.to(
+              Vector2.zero(),
+              EffectController(duration: 0.18, curve: Curves.easeIn),
+              onComplete: () {
+                removeFromParent();
+                onComplete?.call(); // ⬇️ EN KRİTİK SATIR
+              },
+            ),
+          );
+        },
+      ),
+    );
   }
 
   void breakAllRowAndColumn() {
+    final targetCol = col;
+    final targetRow = row;
 
-      final targetCol = col;
-      final targetRow = row;
-      for (final piece in game.pieces) {
-        if (piece.col == targetCol || piece.row == targetRow) {
-          piece.breakPiece();
-        }
-      }
-      game.isExplosionMode = false; // sadece 1 kez kır
-    
+    final toRemove = game.pieces.where((p) {
+      return p.col == targetCol || p.row == targetRow;
+    }).toList();
+
+    int finished = 0;
+
+    for (final piece in toRemove) {
+      piece.explode(
+        onComplete: () {
+          finished++;
+
+          // 🔽 TÜM PATLAMALAR BİTTİ
+          if (finished == toRemove.length) {
+            game.applyGravity(); // ✅ 1 KERE
+          }
+        },
+      );
+    }
+
+    game.isRowColumnExplosion = false;
+  }
+
+  void _handleSwap() {
+    // 1️⃣ İlk taş seçimi
+    if (game.firstSelectedPiece == null) {
+      game.firstSelectedPiece = this;
+
+      add(
+        ScaleEffect.to(
+          Vector2.all(1.25),
+          EffectController(duration: 0.2, curve: Curves.easeOutBack),
+        ),
+      );
+      return;
+    }
+
+    final first = game.firstSelectedPiece!;
+
+    // 2️⃣ Aynı taşa basıldıysa iptal
+    if (first == this) {
+      first.add(
+        ScaleEffect.to(Vector2.all(1.0), EffectController(duration: 0.15)),
+      );
+      game.firstSelectedPiece = null;
+      game.isSwapMode = false;
+      return;
+    }
+
+    // 3️⃣ SADECE YAN KOMŞU KONTROLÜ 🔒
+    final int rowDiff = (first.row - row).abs();
+    final int colDiff = (first.col - col).abs();
+
+    final bool isAdjacent = (rowDiff + colDiff) == 1;
+
+    if (!isAdjacent) {
+      // ❌ Yan değil → iptal + eski boyuta dön
+      first.add(
+        ScaleEffect.to(Vector2.all(1.0), EffectController(duration: 0.15)),
+      );
+
+      game.firstSelectedPiece = null;
+      game.isSwapMode = false;
+      return;
+    }
+
+    // 4️⃣ YAN KOMŞU → SWAP 🔄
+    game.swapPieces(first, this);
+
+    game.firstSelectedPiece = null;
+    game.isSwapMode = false;
   }
 
   @override
-bool onTapDown(TapDownEvent event) {
-  if (isEnemy) {
-    if (game.isSingleExplosion) {
-      breakPiece();
-      game.isSingleExplosion = false; // sadece 1 kez kır
-    } else if (game.isRowColumnExplosion) {
-      breakAllRowAndColumn();
-      game.isRowColumnExplosion = false; // sadece 1 kez kır
+  bool onTapDown(TapDownEvent event) {
+    // 🔁 1️⃣ SWAP MODU HER ŞEYDEN ÖNCE
+    if (game.isSwapMode) {
+      _handleSwap();
+      return true;
     }
-  }
-  return true;
-}
 
+    // 💣 2️⃣ PATLATMA MODLARI
+    if (isEnemy) {
+      if (game.isSingleExplosion) {
+        explode();
+        game.isSingleExplosion = false;
+        return true;
+      }
+
+      if (game.isRowColumnExplosion) {
+        breakAllRowAndColumn();
+        game.isRowColumnExplosion = false;
+        return true;
+      }
+    }
+
+    return false;
+  }
 }

@@ -5,24 +5,65 @@ import 'package:connect_four/app/presentations/main/widget/scor_text_widget.dart
 import 'package:connect_four/core/extensions/asset_extension.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
-import 'package:connect_four/app/presentations/main/widget/dialog_widget.dart'; 
+import 'package:connect_four/app/presentations/main/widget/dialog_widget.dart';
 
-class MainScreen extends StatelessWidget {
-  MainScreen({super.key});
+enum ActionType { singleExplosion, rowColumnExplosion, swap, undo }
 
-  final game = ConnectFour();
-  final storage = GameStorage();
+class MainScreen extends StatefulWidget {
+  const MainScreen({super.key});
+
+  @override
+  State<MainScreen> createState() => _MainScreenState();
+}
+
+class _MainScreenState extends State<MainScreen> {
+  final ConnectFour game = ConnectFour();
+  final GameStorage storage = GameStorage();
+
+  ActionType? selectedAction;
+
+  void selectAction(ActionType action) {
+    setState(() {
+      selectedAction = action;
+    });
+
+    /// Oyun modları
+    game.isSingleExplosion = false;
+    game.isRowColumnExplosion = false;
+    game.isSwapMode = false;
+
+    switch (action) {
+      case ActionType.singleExplosion:
+        game.isSingleExplosion = true;
+        break;
+
+      case ActionType.rowColumnExplosion:
+        game.isRowColumnExplosion = true;
+        break;
+
+      case ActionType.swap:
+        game.isSwapMode = true;
+        game.firstSelectedPiece = null;
+        break;
+
+      case ActionType.undo:
+        game.isRowColumnExplosion = true;
+        break;
+    }
+  }
+
+  double _opacity(ActionType action) {
+    if (selectedAction == null) return 1.0;
+    return selectedAction == action ? 1.0 : 0.4;
+  }
 
   @override
   Widget build(BuildContext context) {
-    final storage = GameStorage();
-
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
             image: AssetImage(AssetImages.image.path(AssetType.png)),
-
             fit: BoxFit.cover,
           ),
         ),
@@ -30,10 +71,10 @@ class MainScreen extends StatelessWidget {
           padding: const EdgeInsets.all(8.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              /// SCORE BAR
               Padding(
-                padding: const EdgeInsets.only(top: 40.0),
+                padding: const EdgeInsets.only(right: 20, left: 20, top: 50),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -46,70 +87,75 @@ class MainScreen extends StatelessWidget {
                 ),
               ),
 
-              SizedBox(
-                height:
-                    MediaQuery.of(context).size.height *
-                    0.60, // ← %60 dene, beğenmezsen 0.55 veya 0.65 yap
-                width: MediaQuery.of(context).size.width * 0.90,
+              /// GAME
+              AspectRatio(
+                aspectRatio: 1,
+
                 child: GameWidget<ConnectFour>(
                   game: game,
                   overlayBuilderMap: {
-                    'WinOverlay': (BuildContext context, ConnectFour game) {
-                      return DialogWidget(
-                        result: GameResult.win,
-                        onPlayAgain: () {
-                          game.overlays.remove('WinOverlay');
-                          game.resetGame();
-                        },
-                      );
-                    },
-                    'LoseOverlay': (BuildContext context, ConnectFour game) {
-                      return DialogWidget(
-                        result: GameResult.lose,
-                        onPlayAgain: () {
-                          game.overlays.remove('LoseOverlay');
-                          game.resetGame();
-                        },
-                      );
-                    },
-                    'NoSpace': (BuildContext context, ConnectFour game) {
-                      return DialogWidget(
-                        onPlayAgain: () {
-                          game.overlays.remove('LoseOverlay');
-                          game.resetGame();
-                        },
-                        result: GameResult.noSpace,
-                      );
-                    },
+                    'WinOverlay': (_, game) => DialogWidget(
+                      result: GameResult.win,
+                      onPlayAgain: () {
+                        game.overlays.remove('WinOverlay');
+                        game.resetGame();
+                        setState(() => selectedAction = null);
+                      },
+                    ),
+                    'LoseOverlay': (_, game) => DialogWidget(
+                      result: GameResult.lose,
+                      onPlayAgain: () {
+                        game.overlays.remove('LoseOverlay');
+                        game.resetGame();
+                        setState(() => selectedAction = null);
+                      },
+                    ),
+                    'NoSpace': (_, game) => DialogWidget(
+                      result: GameResult.noSpace,
+                      onPlayAgain: () {
+                        game.resetGame();
+                        setState(() => selectedAction = null);
+                      },
+                    ),
                   },
                 ),
               ),
+
+              /// ACTION BAR
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  // Tek taş kırma modu
-                  IconWidget(
-                    onTap: () {
-                      game.isSingleExplosion = true;
-                      game.isRowColumnExplosion = false;
-                    },
-                    iconPath: AssetImages.block_1explosion.path(AssetType.png),
-                  ),
-
-                  // Satır ve sütun kırma modu
-                  IconWidget(
-                    onTap: () {
-                      game.isSingleExplosion = false;
-                      game.isRowColumnExplosion = true;
-                    },
-                    iconPath: AssetImages.column_1row_1deletion.path(
-                      AssetType.png,
+                  Opacity(
+                    opacity: _opacity(ActionType.singleExplosion),
+                    child: IconWidget(
+                      iconPath: AssetImages.block_1explosion.path(
+                        AssetType.png,
+                      ),
+                      onTap: () => selectAction(ActionType.singleExplosion),
                     ),
                   ),
-
-                  IconWidget(iconPath: AssetImages.swap.path(AssetType.png)),
-                  IconWidget(
-                    iconPath: AssetImages.undo_1move.path(AssetType.png),
+                  Opacity(
+                    opacity: _opacity(ActionType.rowColumnExplosion),
+                    child: IconWidget(
+                      iconPath: AssetImages.column_1row_1deletion.path(
+                        AssetType.png,
+                      ),
+                      onTap: () => selectAction(ActionType.rowColumnExplosion),
+                    ),
+                  ),
+                  Opacity(
+                    opacity: _opacity(ActionType.swap),
+                    child: IconWidget(
+                      iconPath: AssetImages.swap.path(AssetType.png),
+                      onTap: () => selectAction(ActionType.swap),
+                    ),
+                  ),
+                  Opacity(
+                    opacity: _opacity(ActionType.undo),
+                    child: IconWidget(
+                      iconPath: AssetImages.undo_1move.path(AssetType.png),
+                      onTap: () => selectAction(ActionType.undo),
+                    ),
                   ),
                 ],
               ),

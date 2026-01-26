@@ -2,23 +2,26 @@ import 'package:connect_four/app/data/hive/game_storage.dart';
 import 'package:connect_four/app/presentations/main/component/board.dart';
 import 'package:connect_four/app/presentations/main/component/piece.dart';
 import 'package:connect_four/core/service/local_ai_services.dart';
+import 'package:flame/effects.dart';
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 
 class ConnectFour extends FlameGame with TapCallbacks {
   static const int rows = 8;
-  static const int cols = 6;
+  static const int cols = 7;
   bool isPlayerTurn = true;
+  bool isSwapMode = false;
+  Piece? firstSelectedPiece;
 
   late double cellSize;
   late Vector2 boardPosition;
 
-  int currentPlayer = 1; 
+  int currentPlayer = 1;
   bool isGameOver = false;
   bool isExplosionMode = false;
 
-   bool isSingleExplosion = false;
+  bool isSingleExplosion = false;
   bool isRowColumnExplosion = false;
 
   // 0 = boş, 1 = kırmızı, 2 = yeşil
@@ -55,6 +58,68 @@ class ConnectFour extends FlameGame with TapCallbacks {
     player1Score = 0;
     isPlayerTurn = true;
     scoreNotifier.value = 0;
+  }
+
+  void applyGravity() {
+    bool moved;
+
+    do {
+      moved = false;
+
+      // alttan yukarı sırala
+      final sortedPieces = List<Piece>.from(pieces)
+        ..sort((a, b) => b.row.compareTo(a.row));
+
+      for (final piece in sortedPieces) {
+        final belowRow = piece.row + 1;
+
+        if (belowRow < rows && board[belowRow][piece.col] == 0) {
+          // board güncelle
+          board[piece.row][piece.col] = 0;
+          board[belowRow][piece.col] = piece.player;
+
+          piece.row = belowRow;
+
+          final targetY = boardPosition.y + belowRow * cellSize + cellSize / 2;
+
+          piece.add(
+            MoveEffect.to(
+              Vector2(piece.position.x, targetY),
+              EffectController(duration: 0.22, curve: Curves.easeIn),
+            ),
+          );
+
+          moved = true; // ⬅️ ÇOK KRİTİK
+        }
+      }
+    } while (moved); // 🔥 boşluk kalmayana kadar
+  }
+
+  void swapPieces(Piece a, Piece b) {
+    // 1️⃣ Pozisyonları sakla
+    final Vector2 posA = a.position.clone();
+    final Vector2 posB = b.position.clone();
+
+    // 2️⃣ Row / Col sakla
+    final int rowA = a.row;
+    final int colA = a.col;
+    final int rowB = b.row;
+    final int colB = b.col;
+
+    // 3️⃣ Board güncelle
+    board[rowA][colA] = b.player;
+    board[rowB][colB] = a.player;
+
+    // 4️⃣ Row / Col swap
+    a.row = rowB;
+    a.col = colB;
+    b.row = rowA;
+    b.col = colA;
+
+    // 5️⃣ Animasyon (2 saniye)
+    a.add(MoveEffect.to(posB, CurvedEffectController(1, Curves.easeInOut)));
+
+    b.add(MoveEffect.to(posA, CurvedEffectController(1, Curves.easeInOut)));
   }
 
   void _dropPiece(int col, int player) {
@@ -94,7 +159,7 @@ class ConnectFour extends FlameGame with TapCallbacks {
 
     final startPosition = Vector2(
       targetPosition.x,
-      boardPosition.y - cellSize * 1.5, // Yukarıdan başlama
+      boardPosition.y - cellSize * 1.5,
     );
 
     final piece = Piece(
@@ -104,8 +169,8 @@ class ConnectFour extends FlameGame with TapCallbacks {
       cellSize: cellSize,
       col: col,
       row: row,
-      isEnemy: player==2,
-      game: this
+      isEnemy: player == 2,
+      game: this,
     );
 
     add(piece);
