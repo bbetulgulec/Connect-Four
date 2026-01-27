@@ -26,6 +26,10 @@ dependencies:
   hive: ^2.2.3
   flutter_bloc: ^9.1.1
   mobibox_pay: ^1.0.6
+  path_provider: ^2.1.5
+  audioplayers: ^5.2.1
+  vibration: ^3.1.5
+
 
 dev_dependencies:
   flutter_test:
@@ -44,6 +48,7 @@ flutter:
   assets:
     - assets/image/
     - assets/fonts/
+    - assets/wav/
 
   #   - images/a_dot_ham.jpeg
 

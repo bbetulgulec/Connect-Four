@@ -7,6 +7,7 @@ import 'package:connect_four/app/presentations/onboarding/widget/elevated_button
 import 'package:connect_four/app/presentations/onboarding/widget/page_view_dots.dart';
 import 'package:connect_four/app/data/models/onboardingItems/onboarding_data.dart';
 import 'package:connect_four/core/extensions/asset_extension.dart';
+import 'package:hive/hive.dart';
 
 class OnboardingView extends StatefulWidget {
   const OnboardingView({super.key});
@@ -19,14 +20,18 @@ class _OnboardingViewState extends State<OnboardingView> {
   final PageController _pageController = PageController();
   int currentPage = 0;
 
-  void nextPage() {
+  void nextPage() async {
     if (_pageController.page! < onboardingItems.length - 1) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
     } else {
-      Navigation.pushReplace(page: LoginView());
+      // 🔴 BURASI EN KRİTİK SATIR
+      final onboardingBox = Hive.box<bool>('onboarding');
+      await onboardingBox.put('shown', true);
+
+      Navigation.pushReplace(page: const LoginView());
     }
   }
 

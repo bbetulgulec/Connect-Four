@@ -1,11 +1,35 @@
 import 'dart:ui';
 
 import 'package:connect_four/app/presentations/login/widget/switch_widget.dart';
-import 'package:connect_four/core/helper/nav_helper/navigation_helper.dart';
+import 'package:connect_four/main.dart';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 
-class DialogWidget extends StatelessWidget {
+class DialogWidget extends StatefulWidget {
   const DialogWidget({super.key});
+
+  @override
+  State<DialogWidget> createState() => _DialogWidgetState();
+}
+
+class _DialogWidgetState extends State<DialogWidget> {
+  bool isMuted = false; // switch durumu
+  late Box<bool> voiceBox; // box referansı
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Hive box aç
+    Hive.openBox<bool>('voice').then((box) {
+      voiceBox = box;
+
+      // Hive'dan switch durumunu al
+      setState(() {
+        isMuted = voiceBox.get('enabled', defaultValue: false) ?? false;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,6 +49,7 @@ class DialogWidget extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // Başlık ve kapatma butonu
                 Row(
                   children: [
                     Expanded(
@@ -40,25 +65,18 @@ class DialogWidget extends StatelessWidget {
                         ),
                       ),
                     ),
-                    Align(
-                      alignment: AlignmentGeometry.topRight,
-                      child: InkWell(
-                        onTap: () {
-                          Navigation.ofPop();
-                        },
-                        child: Icon(
-                          Icons.close,
-                          color: Colors.white60,
-                          size: 30,
-                        ),
-                      ),
+                    InkWell(
+                      onTap: () => Navigator.of(context).pop(),
+                      child: Icon(Icons.close, color: Colors.white60, size: 30),
                     ),
                   ],
                 ),
                 const SizedBox(height: 16),
+
+                // Bildirim Switch
                 Row(
                   mainAxisAlignment: MainAxisAlignment.start,
-                  children: <Widget>[
+                  children: [
                     Text(
                       "Bildirimler :",
                       style: TextStyle(fontSize: 20, color: Colors.white),
@@ -68,22 +86,38 @@ class DialogWidget extends StatelessWidget {
                   ],
                 ),
 
+                // SES SWITCH
                 Row(
                   mainAxisAlignment: MainAxisAlignment.start,
-
                   children: [
                     Text(
                       "Sesler :",
                       style: TextStyle(fontSize: 20, color: Colors.white),
                     ),
                     Spacer(),
-                    SwitchWidget(value: true, onChanged: (bool value) {}),
+                    SwitchWidget(
+                      value: isMuted,
+                      onChanged: (bool value) async {
+                        setState(() {
+                          isMuted = value;
+                          voiceBox.put('enabled', value); // Hive’e kaydet
+                        });
+
+                        if (value) {
+                          await mainPlayer.setVolume(0.0);
+                          await mainPlayer.pause(); // opsiyonel: durdurmak için
+                        } else {
+                          await mainPlayer.setVolume(1.0);
+                          await mainPlayer.resume(); // direkt çağır
+                        }
+                      },
+                    ),
                   ],
                 ),
 
+                // Titreşimler Switch
                 Row(
                   mainAxisAlignment: MainAxisAlignment.start,
-
                   children: [
                     Text(
                       "Titreşimler :",
@@ -93,6 +127,7 @@ class DialogWidget extends StatelessWidget {
                     SwitchWidget(value: false, onChanged: (bool value) {}),
                   ],
                 ),
+
                 const SizedBox(height: 16),
               ],
             ),

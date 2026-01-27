@@ -13,6 +13,8 @@ class LoginView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    
     return Scaffold(
       body: DecoratedBox(
         decoration: BoxDecoration(color: null),
@@ -36,6 +38,7 @@ class LoginView extends StatelessWidget {
                   MaterialButtonWidget(
                     text: "Devam Et",
                     color: Colors.redAccent,
+                    
                     onPressed: () {
                       // işlem
                     },

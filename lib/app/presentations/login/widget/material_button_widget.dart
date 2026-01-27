@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:vibration/vibration.dart';
 
 class MaterialButtonWidget extends StatelessWidget {
   final String text;
@@ -31,7 +33,12 @@ class MaterialButtonWidget extends StatelessWidget {
             ],
           ),
           child: ElevatedButton(
-            onPressed: onPressed,
+            onPressed: () async {
+              if (await Vibration.hasAmplitudeControl()) {
+                Vibration.vibrate(amplitude: 128);
+              }
+              onPressed;
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.transparent,
               foregroundColor: Colors.white,
