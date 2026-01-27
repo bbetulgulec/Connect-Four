@@ -4,12 +4,41 @@ import 'package:connect_four/app/presentations/login/view/login_view.dart';
 import 'package:connect_four/app/presentations/onboarding/view/onboarding_view.dart';
 import 'package:connect_four/core/helper/nav_helper/navigation_helper.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 final AudioPlayer mainPlayer = AudioPlayer(); // global player
 
+void onDidReceiveNotificationResponse(
+  NotificationResponse notificationResponse,
+) {
+  // Handle notification response
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+  const AndroidInitializationSettings initializationSettingsAndroid =
+      AndroidInitializationSettings('notification_icon');
+  final DarwinInitializationSettings initializationSettingsDarwin =
+      DarwinInitializationSettings();
+  final InitializationSettings initializationSettings = InitializationSettings(
+    android: initializationSettingsAndroid,
+    iOS: initializationSettingsDarwin,
+    macOS: initializationSettingsDarwin,
+  );
+  await flutterLocalNotificationsPlugin.initialize(
+    settings: initializationSettings,
+    onDidReceiveNotificationResponse: onDidReceiveNotificationResponse,
+  );
+  final androidPlugin = flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin
+      >();
+
+  await androidPlugin?.requestNotificationsPermission();
 
   await Hive.initFlutter();
 
@@ -17,7 +46,8 @@ void main() async {
 
   await Hive.openBox<GameProgress>('game');
   await Hive.openBox<bool>('onboarding');
-  final voiceBox = await Hive.openBox<bool>("voice"); 
+  await Hive.openBox<bool>('vibration');
+  final voiceBox = await Hive.openBox<bool>("voice");
 
   final bool isMuted = voiceBox.get('enabled', defaultValue: false) ?? false;
 

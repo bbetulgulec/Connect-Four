@@ -4,6 +4,7 @@ import 'package:connect_four/app/presentations/login/widget/switch_widget.dart';
 import 'package:connect_four/main.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import 'package:vibration/vibration.dart';
 
 class DialogWidget extends StatefulWidget {
   const DialogWidget({super.key});
@@ -15,6 +16,8 @@ class DialogWidget extends StatefulWidget {
 class _DialogWidgetState extends State<DialogWidget> {
   bool isMuted = false; // switch durumu
   late Box<bool> voiceBox; // box referansı
+  bool isClosedVibration = false;
+  late Box<bool> vibrationBox;
 
   @override
   void initState() {
@@ -27,6 +30,15 @@ class _DialogWidgetState extends State<DialogWidget> {
       // Hive'dan switch durumunu al
       setState(() {
         isMuted = voiceBox.get('enabled', defaultValue: false) ?? false;
+      });
+
+      Hive.openBox<bool>('vibration').then((vibBox) {
+        vibrationBox = vibBox;
+
+        setState(() {
+          isClosedVibration =
+              vibrationBox.get('enabled', defaultValue: false) ?? false;
+        });
       });
     });
   }
@@ -115,7 +127,6 @@ class _DialogWidgetState extends State<DialogWidget> {
                   ],
                 ),
 
-                // Titreşimler Switch
                 Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
@@ -124,7 +135,20 @@ class _DialogWidgetState extends State<DialogWidget> {
                       style: TextStyle(fontSize: 20, color: Colors.white),
                     ),
                     Spacer(),
-                    SwitchWidget(value: false, onChanged: (bool value) {}),
+                    SwitchWidget(
+                      value: isClosedVibration,
+                      onChanged: (bool value) {
+                        setState(() {
+                          isClosedVibration = value;
+                          vibrationBox.put('enabled', value); 
+                        });
+                        if (value) {
+                          Vibration.cancel(); 
+                        } else {
+                          Vibration.vibrate(duration: 50); 
+                        }
+                      },
+                    ),
                   ],
                 ),
 
