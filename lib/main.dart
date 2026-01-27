@@ -7,19 +7,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-final AudioPlayer mainPlayer = AudioPlayer(); // global player
+final AudioPlayer mainPlayer = AudioPlayer(); 
 
 void onDidReceiveNotificationResponse(
   NotificationResponse notificationResponse,
 ) {
   // Handle notification response
 }
+FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
+  
   const AndroidInitializationSettings initializationSettingsAndroid =
       AndroidInitializationSettings('notification_icon');
   final DarwinInitializationSettings initializationSettingsDarwin =
@@ -47,6 +48,8 @@ void main() async {
   await Hive.openBox<GameProgress>('game');
   await Hive.openBox<bool>('onboarding');
   await Hive.openBox<bool>('vibration');
+  await Hive.openBox<bool>('notifications');
+  await Hive.openBox<bool>('gameRemember');
   final voiceBox = await Hive.openBox<bool>("voice");
 
   final bool isMuted = voiceBox.get('enabled', defaultValue: false) ?? false;

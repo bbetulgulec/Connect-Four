@@ -6,6 +6,8 @@ import 'package:connect_four/app/presentations/main/view/main_screen.dart';
 import 'package:connect_four/core/extensions/asset_extension.dart';
 import 'package:connect_four/core/helper/nav_helper/navigation_helper.dart';
 
+import 'package:connect_four/app/data/hive/game_storage.dart';
+
 import 'package:flutter/material.dart';
 
 class LoginView extends StatelessWidget {
@@ -13,8 +15,6 @@ class LoginView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
-    
     return Scaffold(
       body: DecoratedBox(
         decoration: BoxDecoration(color: null),
@@ -38,9 +38,17 @@ class LoginView extends StatelessWidget {
                   MaterialButtonWidget(
                     text: "Devam Et",
                     color: Colors.redAccent,
-                    
-                    onPressed: () {
-                      // işlem
+
+                    onPressed: ()  {
+                      final savedGame =  storage.loadGame();
+
+                      if (savedGame == null) return;
+
+                      Navigation.pushAndRemoveAll(
+                        page: MainScreen(
+                          initialGameState: savedGame, 
+                        ),
+                      );
                     },
                   ),
 

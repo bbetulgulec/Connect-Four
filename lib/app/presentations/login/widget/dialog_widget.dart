@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:app_settings/app_settings.dart';
 import 'package:connect_four/app/presentations/login/widget/switch_widget.dart';
 import 'package:connect_four/main.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +19,8 @@ class _DialogWidgetState extends State<DialogWidget> {
   late Box<bool> voiceBox; // box referansı
   bool isClosedVibration = false;
   late Box<bool> vibrationBox;
+  bool isNotificationEnabled = false;
+  late Box<bool> notification;
 
   @override
   void initState() {
@@ -38,6 +41,14 @@ class _DialogWidgetState extends State<DialogWidget> {
         setState(() {
           isClosedVibration =
               vibrationBox.get('enabled', defaultValue: false) ?? false;
+        });
+      });
+      Hive.openBox<bool>('notifications').then((notifBox) {
+        notification = notifBox;
+
+        setState(() {
+          isNotificationEnabled =
+              notification.get('enabled', defaultValue: false) ?? false;
         });
       });
     });
@@ -94,7 +105,38 @@ class _DialogWidgetState extends State<DialogWidget> {
                       style: TextStyle(fontSize: 20, color: Colors.white),
                     ),
                     Spacer(),
-                    SwitchWidget(value: false, onChanged: (bool value) {}),
+                    SwitchWidget(
+                      value: isNotificationEnabled,
+                      onChanged: (bool value) {
+                        setState(() {
+                          isNotificationEnabled = value;
+                          notification.put('enabled', value); // Hive’e kaydet
+                        });
+                        if (value) {
+                          showDialog(
+                            context: context,
+                            builder: (_) => AlertDialog(
+                              title: Text("Bildirimler Kapalı"),
+                              content: Text(
+                                "Bildirimleri açmak için Ayarlar > Bildirimler bölümüne gitmelisin.",
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    AppSettings.openAppSettings(
+                                      type: AppSettingsType.notification,
+                                    );
+                                  },
+                                  child: Text("Ayarları Aç"),
+                                ),
+                              ],
+                            ),
+                          );
+                        } else {
+                          flutterLocalNotificationsPlugin.cancelAll();
+                        }
+                      },
+                    ),
                   ],
                 ),
 
@@ -140,12 +182,12 @@ class _DialogWidgetState extends State<DialogWidget> {
                       onChanged: (bool value) {
                         setState(() {
                           isClosedVibration = value;
-                          vibrationBox.put('enabled', value); 
+                          vibrationBox.put('enabled', value);
                         });
                         if (value) {
-                          Vibration.cancel(); 
+                          Vibration.cancel();
                         } else {
-                          Vibration.vibrate(duration: 50); 
+                          Vibration.vibrate(duration: 50);
                         }
                       },
                     ),
