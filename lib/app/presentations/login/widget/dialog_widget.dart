@@ -1,10 +1,9 @@
 import 'dart:ui';
-
 import 'package:app_settings/app_settings.dart';
+import 'package:connect_four/app/data/service/hive_service.dart';
 import 'package:connect_four/app/presentations/login/widget/switch_widget.dart';
 import 'package:connect_four/main.dart';
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
 import 'package:vibration/vibration.dart';
 
 class DialogWidget extends StatefulWidget {
@@ -15,42 +14,25 @@ class DialogWidget extends StatefulWidget {
 }
 
 class _DialogWidgetState extends State<DialogWidget> {
-  bool isMuted = false; // switch durumu
-  late Box<bool> voiceBox; // box referansı
+  bool isMuted = false;
   bool isClosedVibration = false;
-  late Box<bool> vibrationBox;
   bool isNotificationEnabled = false;
-  late Box<bool> notification;
 
   @override
   void initState() {
     super.initState();
+    _loadSettings();
+  }
 
-    // Hive box aç
-    Hive.openBox<bool>('voice').then((box) {
-      voiceBox = box;
+  void _loadSettings() {
+    final voiceData = HiveService.getData('voice');
+    final vibrationData = HiveService.getData('vibration');
+    final notificationData = HiveService.getData('notifications');
 
-      // Hive'dan switch durumunu al
-      setState(() {
-        isMuted = voiceBox.get('enabled', defaultValue: false) ?? false;
-      });
-
-      Hive.openBox<bool>('vibration').then((vibBox) {
-        vibrationBox = vibBox;
-
-        setState(() {
-          isClosedVibration =
-              vibrationBox.get('enabled', defaultValue: false) ?? false;
-        });
-      });
-      Hive.openBox<bool>('notifications').then((notifBox) {
-        notification = notifBox;
-
-        setState(() {
-          isNotificationEnabled =
-              notification.get('enabled', defaultValue: false) ?? false;
-        });
-      });
+    setState(() {
+      isMuted = voiceData?['enabled'] ?? false;
+      isClosedVibration = vibrationData?['enabled'] ?? false;
+      isNotificationEnabled = notificationData?['enabled'] ?? false;
     });
   }
 
@@ -72,133 +54,134 @@ class _DialogWidgetState extends State<DialogWidget> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Başlık ve kapatma butonu
-                Row(
-                  children: [
-                    Expanded(
-                      child: Center(
-                        child: Text(
-                          "Ayarlar",
-                          style: TextStyle(
-                            fontFamily: "Nunito",
-                            fontSize: 25,
-                            letterSpacing: 1,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                    InkWell(
-                      onTap: () => Navigator.of(context).pop(),
-                      child: Icon(Icons.close, color: Colors.white60, size: 30),
-                    ),
-                  ],
-                ),
+                _buildHeader(context),
                 const SizedBox(height: 16),
 
-                // Bildirim Switch
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Bildirimler :",
-                      style: TextStyle(fontSize: 20, color: Colors.white),
-                    ),
-                    Spacer(),
-                    SwitchWidget(
-                      value: isNotificationEnabled,
-                      onChanged: (bool value) {
-                        setState(() {
-                          isNotificationEnabled = value;
-                          notification.put('enabled', value); // Hive’e kaydet
-                        });
-                        if (value) {
-                          showDialog(
-                            context: context,
-                            builder: (_) => AlertDialog(
-                              title: Text("Bildirimler Kapalı"),
-                              content: Text(
-                                "Bildirimleri açmak için Ayarlar > Bildirimler bölümüne gitmelisin.",
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () {
-                                    AppSettings.openAppSettings(
-                                      type: AppSettingsType.notification,
-                                    );
-                                  },
-                                  child: Text("Ayarları Aç"),
-                                ),
-                              ],
-                            ),
-                          );
-                        } else {
-                          flutterLocalNotificationsPlugin.cancelAll();
-                        }
-                      },
-                    ),
-                  ],
+                // BİLDİRİM SWITCH
+                _buildSettingRow(
+                  title: "Bildirimler :",
+                  value: isNotificationEnabled,
+                  onChanged: (bool value) async {
+                    setState(() => isNotificationEnabled = value);
+                    await HiveService.saveData('notifications', {
+                      'enabled': value,
+                    });
+
+                    if (value) {
+                      _showNotificationAlert(context);
+                    } else {
+                      flutterLocalNotificationsPlugin.cancelAll();
+                    }
+                  },
                 ),
 
                 // SES SWITCH
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Sesler :",
-                      style: TextStyle(fontSize: 20, color: Colors.white),
-                    ),
-                    Spacer(),
-                    SwitchWidget(
-                      value: isMuted,
-                      onChanged: (bool value) async {
-                        setState(() {
-                          isMuted = value;
-                          voiceBox.put('enabled', value); // Hive’e kaydet
-                        });
+                _buildSettingRow(
+                  title: "Sesler :",
+                  value: isMuted,
+                  onChanged: (bool value) async {
+                    setState(() => isMuted = value);
+                    await HiveService.saveData('voice', {'enabled': value});
 
-                        if (value) {
-                          await mainPlayer.setVolume(0.0);
-                          await mainPlayer.pause(); // opsiyonel: durdurmak için
-                        } else {
-                          await mainPlayer.setVolume(1.0);
-                          await mainPlayer.resume(); // direkt çağır
-                        }
-                      },
-                    ),
-                  ],
+                    if (value) {
+                      await mainPlayer.setVolume(0.0);
+                      await mainPlayer.pause();
+                    } else {
+                      await mainPlayer.setVolume(1.0);
+                      await mainPlayer.resume();
+                    }
+                  },
                 ),
 
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Titreşimler :",
-                      style: TextStyle(fontSize: 20, color: Colors.white),
-                    ),
-                    Spacer(),
-                    SwitchWidget(
-                      value: isClosedVibration,
-                      onChanged: (bool value) {
-                        setState(() {
-                          isClosedVibration = value;
-                          vibrationBox.put('enabled', value);
-                        });
-                        if (value) {
-                          Vibration.cancel();
-                        } else {
-                          Vibration.vibrate(duration: 50);
-                        }
-                      },
-                    ),
-                  ],
-                ),
+                // TİTREŞİM SWITCH
+                _buildSettingRow(
+                  title: "Titreşimler :",
+                  value: isClosedVibration,
+                  onChanged: (bool value) async {
+                    setState(() => isClosedVibration = value);
+                    await HiveService.saveData('vibration', {'enabled': value});
 
+                    if (value) {
+                      Vibration.cancel();
+                    } else {
+                      if (await Vibration.hasVibrator()) {
+                        Vibration.vibrate(duration: 50);
+                      }
+                    }
+                  },
+                ),
                 const SizedBox(height: 16),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  // Yardımcı UI Metodları (Kodu temiz tutmak için)
+  Widget _buildHeader(BuildContext context) {
+    return Row(
+      children: [
+        const Expanded(
+          child: Center(
+            child: Text(
+              "Ayarlar",
+              style: TextStyle(
+                fontFamily: "Nunito",
+                fontSize: 25,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+        InkWell(
+          onTap: () => Navigator.of(context).pop(),
+          child: const Icon(Icons.close, color: Colors.white60, size: 30),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSettingRow({
+    required String title,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        children: [
+          Text(
+            title,
+            style: const TextStyle(fontSize: 20, color: Colors.white),
+          ),
+          const Spacer(),
+          SwitchWidget(value: value, onChanged: onChanged),
+        ],
+      ),
+    );
+  }
+
+  void _showNotificationAlert(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Bildirimler"),
+        content: const Text(
+          "Bildirim ayarlarını değiştirmek için sistem ayarlarına gitmek ister misiniz?",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () =>
+                AppSettings.openAppSettings(type: AppSettingsType.notification),
+            child: const Text("Ayarları Aç"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Kapat"),
+          ),
+        ],
       ),
     );
   }

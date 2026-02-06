@@ -1,3 +1,4 @@
+import 'package:connect_four/app/data/service/hive_service.dart';
 import 'package:connect_four/app/presentations/login/view/login_view.dart';
 import 'package:connect_four/core/helper/nav_helper/navigation_helper.dart';
 import 'package:flutter/material.dart';
@@ -27,11 +28,11 @@ class _OnboardingViewState extends State<OnboardingView> {
         curve: Curves.easeInOut,
       );
     } else {
-      // 🔴 BURASI EN KRİTİK SATIR
-      final onboardingBox = Hive.box<bool>('onboarding');
-      await onboardingBox.put('shown', true);
+     await HiveService.saveData('onboarding', {'shown': true});
 
-      Navigation.pushReplace(page: const LoginView());
+      if (mounted) {
+        Navigation.pushReplace(page: const LoginView());
+      }
     }
   }
 

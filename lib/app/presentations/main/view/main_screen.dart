@@ -1,4 +1,5 @@
-import 'package:connect_four/app/data/hive/game_storage.dart';
+import 'package:connect_four/app/data/models/active_game.dart';
+import 'package:connect_four/app/data/service/hive_service.dart';
 import 'package:connect_four/app/presentations/main/widget/connect_four.dart';
 import 'package:connect_four/app/presentations/main/widget/icon_widget.dart';
 import 'package:connect_four/app/presentations/main/widget/scor_text_widget.dart';
@@ -10,15 +11,33 @@ import 'package:connect_four/app/presentations/main/widget/dialog_widget.dart';
 enum ActionType { singleExplosion, rowColumnExplosion, swap, undo }
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
+  final ActiveGame? initialGame;
+
+  const MainScreen({super.key, this.initialGame});
 
   @override
   State<MainScreen> createState() => _MainScreenState();
 }
 
 class _MainScreenState extends State<MainScreen> {
-  final ConnectFour game = ConnectFour();
-  final GameStorage storage = GameStorage();
+  late ConnectFour game;
+
+  @override
+  @override
+  void initState() {
+    super.initState();
+
+    // Widget'tan veri gelmediyse servisten 'current_game' anahtarıyla iste
+    final savedMap = widget.initialGame == null
+        ? HiveService.getData('current_game')
+        : null;
+
+    final startingGame =
+        widget.initialGame ??
+        (savedMap != null ? ActiveGame.fromJson(savedMap) : null);
+
+    game = ConnectFour(initialGame: startingGame);
+  }
 
   ActionType? selectedAction;
 
@@ -81,7 +100,9 @@ class _MainScreenState extends State<MainScreen> {
                     ScorText(title: 'SCORE', notifier: game.scoreNotifier),
                     ScorText(
                       title: 'BEST',
-                      notifier: storage.bestScoreNotifier,
+                      notifier: ValueNotifier<int>(
+                        HiveService.getData('game_progress')?['highScore'] ?? 0,
+                      ),
                     ),
                   ],
                 ),

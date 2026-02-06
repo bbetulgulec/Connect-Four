@@ -1,3 +1,5 @@
+import 'package:connect_four/app/data/models/active_game.dart';
+import 'package:connect_four/app/data/service/hive_service.dart';
 import 'package:connect_four/app/presentations/login/widget/dialog_widget.dart';
 import 'package:connect_four/app/presentations/login/widget/material_button_widget.dart';
 import 'package:connect_four/app/presentations/login/widget/setting_button.dart';
@@ -5,9 +7,6 @@ import 'package:connect_four/app/presentations/login/widget/title_widget.dart';
 import 'package:connect_four/app/presentations/main/view/main_screen.dart';
 import 'package:connect_four/core/extensions/asset_extension.dart';
 import 'package:connect_four/core/helper/nav_helper/navigation_helper.dart';
-
-import 'package:connect_four/app/data/hive/game_storage.dart';
-
 import 'package:flutter/material.dart';
 
 class LoginView extends StatelessWidget {
@@ -38,17 +37,18 @@ class LoginView extends StatelessWidget {
                   MaterialButtonWidget(
                     text: "Devam Et",
                     color: Colors.redAccent,
+                    onPressed: () {
+                      // HiveService kullanarak Map verisini çekiyoruz
+                      final savedData = HiveService.getData('current_game');
 
-                    onPressed: ()  {
-                      final savedGame =  storage.loadGame();
+                      if (savedData != null) {
+                        // Eğer elinde ActiveGame.fromJson varsa:
+                        final savedGame = ActiveGame.fromJson(savedData);
 
-                      if (savedGame == null) return;
-
-                      Navigation.pushAndRemoveAll(
-                        page: MainScreen(
-                          initialGameState: savedGame, 
-                        ),
-                      );
+                        Navigation.pushAndRemoveAll(
+                          page: MainScreen(initialGame: savedGame),
+                        );
+                      }
                     },
                   ),
 
@@ -57,8 +57,10 @@ class LoginView extends StatelessWidget {
                   MaterialButtonWidget(
                     text: "Yeni Oyun",
                     color: Colors.yellow,
-                    onPressed: () {
-                      Navigation.pushAndRemoveAll(page: MainScreen());
+                    onPressed: () async {
+                      await HiveService.deleteData('current_game');
+
+                      Navigation.pushAndRemoveAll(page: const MainScreen());
                     },
                   ),
 

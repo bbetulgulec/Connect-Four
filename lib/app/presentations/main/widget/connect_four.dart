@@ -1,4 +1,5 @@
-import 'package:connect_four/app/data/hive/game_storage.dart';
+import 'package:connect_four/app/data/models/active_game.dart';
+import 'package:connect_four/app/data/service/hive_service.dart';
 import 'package:connect_four/app/presentations/main/component/board.dart';
 import 'package:connect_four/app/presentations/main/component/piece.dart';
 import 'package:connect_four/core/service/local_ai_services.dart';
@@ -34,9 +35,12 @@ class ConnectFour extends FlameGame with TapCallbacks {
   int player2Score = 0;
 
   final List<Piece> pieces = []; // ← Yeni liste ekle
-  final GameStorage _storage = GameStorage();
 
   final ValueNotifier<int> scoreNotifier = ValueNotifier<int>(0);
+
+  final ActiveGame? initialGame;
+
+  ConnectFour({this.initialGame});
 
   void resetGame() {
     // Tahtayı sıfırla
@@ -57,7 +61,9 @@ class ConnectFour extends FlameGame with TapCallbacks {
 
     player1Score = 0;
     isPlayerTurn = true;
-    scoreNotifier.value = 0;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      scoreNotifier.value = 0;
+    });
   }
 
   void applyGravity() {
@@ -131,17 +137,33 @@ class ConnectFour extends FlameGame with TapCallbacks {
         // 🔥 TAŞ ATTIKÇA PUAN
         if (player == 1) {
           player1Score++;
-          scoreNotifier.value = player1Score; // 🔥 üst UI güncellenir
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            scoreNotifier.value = player1Score;
+          });
         }
-
         if (_checkWin(player)) {
           isGameOver = true;
           final isWin = player == 1;
 
-          _storage.onGameFinished(
-            isWin: isWin,
-            score: player1Score, // 🔥 ARTAN DEĞER
-          );
+          // 🔥 Eski storage yerine yeni servisimizi kullanıyoruz
+          if (isWin) {
+            final currentProgress = HiveService.getProgress();
+            final currentScore = scoreNotifier.value;
+
+            // En yüksek skor kontrolü
+            if (currentScore > (currentProgress['highScore'] ?? 0)) {
+              currentProgress['highScore'] = currentScore;
+            }
+
+            // Coin ekleme
+            currentProgress['coins'] = (currentProgress['coins'] ?? 0) + 10;
+
+            // Kaydet
+            HiveService.saveProgress(currentProgress);
+          }
+
+          // Oyun bittiği için aktif kaydı siliyoruz
+          HiveService.deleteActiveGame();
 
           overlays.add(isWin ? 'WinOverlay' : 'LoseOverlay');
         }
@@ -221,10 +243,12 @@ class ConnectFour extends FlameGame with TapCallbacks {
 
     _dropPiece(col, 1); // SEN
     isPlayerTurn = false;
+    saveGame();
 
     await Future.delayed(const Duration(milliseconds: 500));
 
     await _makeAiMove(); // AI
+    saveGame();
   }
 
   bool _checkWin(int player) {
@@ -279,6 +303,44 @@ class ConnectFour extends FlameGame with TapCallbacks {
     return false;
   }
 
+  void saveGame() {
+    // 1. Mevcut oyun durumundan bir ActiveGame nesnesi yarat
+    final activeGameInstance = ActiveGame(
+      board: board,
+      currentPlayer: currentPlayer,
+      isPlayerTurn: isPlayerTurn,
+      isGameOver: isGameOver,
+      score: scoreNotifier.value,
+    );
+
+    // 2. Servis üzerinden JSON olarak kaydet
+    // Not: ActiveGame modelinde .toJson() metodun olmalı
+    HiveService.saveActiveGame(activeGameInstance.toJson());
+  }
+
+  void loadFromHive(ActiveGame data) {
+    pieces.clear(); // üst üste binmeyi önler
+
+    for (int r = 0; r < rows; r++) {
+      for (int c = 0; c < cols; c++) {
+        board[r][c] = data.board[r][c];
+
+        if (board[r][c] != 0) {
+          _addPiece(r, c, board[r][c]);
+        }
+      }
+    }
+
+    currentPlayer = data.currentPlayer;
+    isPlayerTurn = data.isPlayerTurn;
+    isGameOver = data.isGameOver;
+
+    // 🔥 Burayı post-frame callback ile yap
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      scoreNotifier.value = data.score;
+    });
+  }
+
   @override
   Future<void> onLoad() async {
     cellSize = size.x / (cols + 1);
@@ -297,5 +359,8 @@ class ConnectFour extends FlameGame with TapCallbacks {
         position: boardPosition,
       ),
     );
+    if (initialGame != null) {
+      loadFromHive(initialGame!);
+    }
   }
 }

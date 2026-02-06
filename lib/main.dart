@@ -1,26 +1,23 @@
 import 'package:audioplayers/audioplayers.dart';
-import 'package:connect_four/app/data/hive/game_progress.dart';
+import 'package:connect_four/app/data/service/hive_service.dart';
 import 'package:connect_four/app/presentations/login/view/login_view.dart';
 import 'package:connect_four/app/presentations/onboarding/view/onboarding_view.dart';
 import 'package:connect_four/core/helper/nav_helper/navigation_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 
-final AudioPlayer mainPlayer = AudioPlayer(); 
+final AudioPlayer mainPlayer = AudioPlayer();
 
 void onDidReceiveNotificationResponse(
   NotificationResponse notificationResponse,
 ) {
-  // Handle notification response
 }
 FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
+    FlutterLocalNotificationsPlugin();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  
   const AndroidInitializationSettings initializationSettingsAndroid =
       AndroidInitializationSettings('notification_icon');
   final DarwinInitializationSettings initializationSettingsDarwin =
@@ -41,20 +38,12 @@ void main() async {
 
   await androidPlugin?.requestNotificationsPermission();
 
-  await Hive.initFlutter();
+  await HiveService.init();
 
-  Hive.registerAdapter(GameProgressAdapter());
-
-  await Hive.openBox<GameProgress>('game');
-  await Hive.openBox<bool>('onboarding');
-  await Hive.openBox<bool>('vibration');
-  await Hive.openBox<bool>('notifications');
-  await Hive.openBox<bool>('gameRemember');
-  final voiceBox = await Hive.openBox<bool>("voice");
-
-  final bool isMuted = voiceBox.get('enabled', defaultValue: false) ?? false;
+  final bool isMuted = HiveService.getData('voice')?['enabled'] ?? false;
 
   await mainPlayer.setSource(AssetSource('wav/squeaky_computer_chair.wav'));
+  await mainPlayer.setReleaseMode(ReleaseMode.loop); // Müziği döngüye al
 
   if (!isMuted) {
     await mainPlayer.setVolume(1.0);
@@ -71,10 +60,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final onboardingBox = Hive.box<bool>('onboarding');
-
     final bool onboardingShown =
-        onboardingBox.get('shown', defaultValue: false) ?? false;
+        HiveService.getData('onboarding')?['shown'] ?? false;
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,

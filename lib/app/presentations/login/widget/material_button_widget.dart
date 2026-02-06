@@ -1,5 +1,5 @@
+import 'package:connect_four/app/data/service/hive_service.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:hive/hive.dart';
 import 'package:vibration/vibration.dart';
 import 'package:vibration/vibration_presets.dart';
@@ -21,6 +21,7 @@ class MaterialButtonWidget extends StatefulWidget {
 }
 
 class _MaterialButtonWidgetState extends State<MaterialButtonWidget> {
+  @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 30.0),
@@ -40,9 +41,8 @@ class _MaterialButtonWidgetState extends State<MaterialButtonWidget> {
           ),
           child: ElevatedButton(
             onPressed: () async {
-              final box = Hive.box<bool>('vibration');
-              final isVibrationEnabled =
-                  box.get('enabled', defaultValue: true) ?? true;
+              final vibrationData = HiveService.getData('vibration');
+              final isVibrationEnabled = vibrationData?['enabled'] ?? true;
 
               if (isVibrationEnabled && await Vibration.hasVibrator() == true) {
                 await Vibration.vibrate(preset: VibrationPreset.longAlarmBuzz);
