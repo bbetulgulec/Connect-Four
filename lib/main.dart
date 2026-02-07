@@ -1,17 +1,20 @@
 import 'package:audioplayers/audioplayers.dart';
-import 'package:connect_four/app/data/service/hive_service.dart';
+import 'package:connect_four/core/service/hive_service.dart';
+import 'package:connect_four/app/presentations/login/provider/login_provider.dart';
 import 'package:connect_four/app/presentations/login/view/login_view.dart';
+import 'package:connect_four/app/presentations/main/provider/main_provider.dart';
+import 'package:connect_four/app/presentations/onboarding/provider/onboarding_provider.dart';
 import 'package:connect_four/app/presentations/onboarding/view/onboarding_view.dart';
 import 'package:connect_four/core/helper/nav_helper/navigation_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:provider/provider.dart';
 
 final AudioPlayer mainPlayer = AudioPlayer();
 
 void onDidReceiveNotificationResponse(
   NotificationResponse notificationResponse,
-) {
-}
+) {}
 FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
@@ -52,7 +55,16 @@ void main() async {
     await mainPlayer.setVolume(0.0);
   }
 
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => OnboardingProvider()),
+        ChangeNotifierProvider(create: (_)=> LoginProvider()),
+        ChangeNotifierProvider(create: (_)=> MainProvider())
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {

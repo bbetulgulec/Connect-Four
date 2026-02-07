@@ -53,7 +53,7 @@ class _DialogWidgetState extends State<DialogWidget> {
     final path = Path();
     final fullAngle = degToRad(360);
 
-    path.moveTo(size.width, halfWidth); // başlangıç noktası (sağda)
+    path.moveTo(size.width, halfWidth);
 
     for (double step = 0; step < fullAngle; step += degreesPerStep) {
       path.lineTo(

@@ -1,5 +1,5 @@
 import 'package:connect_four/app/data/models/active_game.dart';
-import 'package:connect_four/app/data/service/hive_service.dart';
+import 'package:connect_four/core/service/hive_service.dart';
 import 'package:connect_four/app/presentations/main/component/board.dart';
 import 'package:connect_four/app/presentations/main/component/piece.dart';
 import 'package:connect_four/core/service/local_ai_services.dart';

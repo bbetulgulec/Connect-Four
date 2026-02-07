@@ -1,5 +1,5 @@
-import 'package:connect_four/app/data/service/hive_service.dart';
 import 'package:connect_four/app/presentations/login/view/login_view.dart';
+import 'package:connect_four/app/presentations/onboarding/provider/onboarding_provider.dart';
 import 'package:connect_four/core/helper/nav_helper/navigation_helper.dart';
 import 'package:flutter/material.dart';
 
@@ -8,57 +8,14 @@ import 'package:connect_four/app/presentations/onboarding/widget/elevated_button
 import 'package:connect_four/app/presentations/onboarding/widget/page_view_dots.dart';
 import 'package:connect_four/app/data/models/onboardingItems/onboarding_data.dart';
 import 'package:connect_four/core/extensions/asset_extension.dart';
-import 'package:hive/hive.dart';
+import 'package:provider/provider.dart';
 
-class OnboardingView extends StatefulWidget {
+class OnboardingView extends StatelessWidget {
   const OnboardingView({super.key});
 
   @override
-  State<OnboardingView> createState() => _OnboardingViewState();
-}
-
-class _OnboardingViewState extends State<OnboardingView> {
-  final PageController _pageController = PageController();
-  int currentPage = 0;
-
-  void nextPage() async {
-    if (_pageController.page! < onboardingItems.length - 1) {
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
-    } else {
-     await HiveService.saveData('onboarding', {'shown': true});
-
-      if (mounted) {
-        Navigation.pushReplace(page: const LoginView());
-      }
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    // PageView sayfa değişimini dinle
-    _pageController.addListener(() {
-      int newPage = _pageController.page!.round();
-      if (currentPage != newPage) {
-        setState(() {
-          currentPage = newPage;
-        });
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final provider = context.watch<OnboardingProvider>();
     return Scaffold(
       body: Stack(
         children: [
@@ -72,7 +29,7 @@ class _OnboardingViewState extends State<OnboardingView> {
 
           /// PAGE VIEW
           PageView.builder(
-            controller: _pageController,
+            controller: provider.pageController,
             itemCount: onboardingItems.length,
             itemBuilder: (context, index) {
               final item = onboardingItems[index];
@@ -106,13 +63,15 @@ class _OnboardingViewState extends State<OnboardingView> {
             right: 0,
             child: Column(
               children: [
-                PageViewDots(pageController: _pageController),
+                PageViewDots(pageController: provider.pageController),
                 const SizedBox(height: 60),
                 ElevatedButtonWidget(
-                  onPressed: nextPage,
-                  text:
-                      (_pageController.hasClients &&
-                          _pageController.page == onboardingItems.length - 1)
+                  onPressed: () {
+                    provider.nextPage(() {
+                      Navigation.pushReplace(page: const LoginView());
+                    });
+                  },
+                  text: provider.currentPage == onboardingItems.length - 1
                       ? "Başlayalım"
                       : "Sonraki",
                 ),

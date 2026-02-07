@@ -1,43 +1,16 @@
 import 'dart:ui';
-import 'package:app_settings/app_settings.dart';
-import 'package:connect_four/app/data/service/hive_service.dart';
-import 'package:connect_four/app/presentations/login/widget/switch_widget.dart';
-import 'package:connect_four/main.dart';
+import 'package:connect_four/app/presentations/login/provider/login_provider.dart';
+import 'package:connect_four/app/presentations/login/widget/build_setting_row.dart';
 import 'package:flutter/material.dart';
-import 'package:vibration/vibration.dart';
+import 'package:provider/provider.dart';
 
-class DialogWidget extends StatefulWidget {
+class DialogWidget extends StatelessWidget {
   const DialogWidget({super.key});
 
   @override
-  State<DialogWidget> createState() => _DialogWidgetState();
-}
-
-class _DialogWidgetState extends State<DialogWidget> {
-  bool isMuted = false;
-  bool isClosedVibration = false;
-  bool isNotificationEnabled = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadSettings();
-  }
-
-  void _loadSettings() {
-    final voiceData = HiveService.getData('voice');
-    final vibrationData = HiveService.getData('vibration');
-    final notificationData = HiveService.getData('notifications');
-
-    setState(() {
-      isMuted = voiceData?['enabled'] ?? false;
-      isClosedVibration = vibrationData?['enabled'] ?? false;
-      isNotificationEnabled = notificationData?['enabled'] ?? false;
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final provider = context.read<LoginProvider>();
+
     return Dialog(
       backgroundColor: Colors.transparent,
       child: ClipRRect(
@@ -58,56 +31,29 @@ class _DialogWidgetState extends State<DialogWidget> {
                 const SizedBox(height: 16),
 
                 // BİLDİRİM SWITCH
-                _buildSettingRow(
+                BuildSettingRow(
                   title: "Bildirimler :",
-                  value: isNotificationEnabled,
+                  value: provider.isNotificationEnabled,
                   onChanged: (bool value) async {
-                    setState(() => isNotificationEnabled = value);
-                    await HiveService.saveData('notifications', {
-                      'enabled': value,
-                    });
-
-                    if (value) {
-                      _showNotificationAlert(context);
-                    } else {
-                      flutterLocalNotificationsPlugin.cancelAll();
-                    }
+                    await provider.setNotificationEnabled(value);
                   },
                 ),
 
                 // SES SWITCH
-                _buildSettingRow(
+                BuildSettingRow(
                   title: "Sesler :",
-                  value: isMuted,
+                  value: provider.isMuted,
                   onChanged: (bool value) async {
-                    setState(() => isMuted = value);
-                    await HiveService.saveData('voice', {'enabled': value});
-
-                    if (value) {
-                      await mainPlayer.setVolume(0.0);
-                      await mainPlayer.pause();
-                    } else {
-                      await mainPlayer.setVolume(1.0);
-                      await mainPlayer.resume();
-                    }
+                    provider.voiceSwitch(value);
                   },
                 ),
 
                 // TİTREŞİM SWITCH
-                _buildSettingRow(
+                BuildSettingRow(
                   title: "Titreşimler :",
-                  value: isClosedVibration,
+                  value: provider.isClosedVibration,
                   onChanged: (bool value) async {
-                    setState(() => isClosedVibration = value);
-                    await HiveService.saveData('vibration', {'enabled': value});
-
-                    if (value) {
-                      Vibration.cancel();
-                    } else {
-                      if (await Vibration.hasVibrator()) {
-                        Vibration.vibrate(duration: 50);
-                      }
-                    }
+                    provider.vibrationSwitch(value);
                   },
                 ),
                 const SizedBox(height: 16),
@@ -143,46 +89,5 @@ class _DialogWidgetState extends State<DialogWidget> {
     );
   }
 
-  Widget _buildSettingRow({
-    required String title,
-    required bool value,
-    required ValueChanged<bool> onChanged,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        children: [
-          Text(
-            title,
-            style: const TextStyle(fontSize: 20, color: Colors.white),
-          ),
-          const Spacer(),
-          SwitchWidget(value: value, onChanged: onChanged),
-        ],
-      ),
-    );
-  }
 
-  void _showNotificationAlert(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("Bildirimler"),
-        content: const Text(
-          "Bildirim ayarlarını değiştirmek için sistem ayarlarına gitmek ister misiniz?",
-        ),
-        actions: [
-          TextButton(
-            onPressed: () =>
-                AppSettings.openAppSettings(type: AppSettingsType.notification),
-            child: const Text("Ayarları Aç"),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Kapat"),
-          ),
-        ],
-      ),
-    );
-  }
 }

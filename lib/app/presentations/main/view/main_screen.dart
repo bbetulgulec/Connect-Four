@@ -1,5 +1,5 @@
-import 'package:connect_four/app/data/models/active_game.dart';
-import 'package:connect_four/app/data/service/hive_service.dart';
+import 'package:connect_four/core/service/hive_service.dart';
+import 'package:connect_four/app/presentations/main/provider/main_provider.dart';
 import 'package:connect_four/app/presentations/main/widget/connect_four.dart';
 import 'package:connect_four/app/presentations/main/widget/icon_widget.dart';
 import 'package:connect_four/app/presentations/main/widget/scor_text_widget.dart';
@@ -7,77 +7,18 @@ import 'package:connect_four/core/extensions/asset_extension.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:connect_four/app/presentations/main/widget/dialog_widget.dart';
+import 'package:provider/provider.dart';
 
 enum ActionType { singleExplosion, rowColumnExplosion, swap, undo }
 
-class MainScreen extends StatefulWidget {
-  final ActiveGame? initialGame;
-
-  const MainScreen({super.key, this.initialGame});
-
-  @override
-  State<MainScreen> createState() => _MainScreenState();
-}
-
-class _MainScreenState extends State<MainScreen> {
-  late ConnectFour game;
-
-  @override
-  @override
-  void initState() {
-    super.initState();
-
-    // Widget'tan veri gelmediyse servisten 'current_game' anahtarıyla iste
-    final savedMap = widget.initialGame == null
-        ? HiveService.getData('current_game')
-        : null;
-
-    final startingGame =
-        widget.initialGame ??
-        (savedMap != null ? ActiveGame.fromJson(savedMap) : null);
-
-    game = ConnectFour(initialGame: startingGame);
-  }
-
-  ActionType? selectedAction;
-
-  void selectAction(ActionType action) {
-    setState(() {
-      selectedAction = action;
-    });
-
-    /// Oyun modları
-    game.isSingleExplosion = false;
-    game.isRowColumnExplosion = false;
-    game.isSwapMode = false;
-
-    switch (action) {
-      case ActionType.singleExplosion:
-        game.isSingleExplosion = true;
-        break;
-
-      case ActionType.rowColumnExplosion:
-        game.isRowColumnExplosion = true;
-        break;
-
-      case ActionType.swap:
-        game.isSwapMode = true;
-        game.firstSelectedPiece = null;
-        break;
-
-      case ActionType.undo:
-        game.isRowColumnExplosion = true;
-        break;
-    }
-  }
-
-  double _opacity(ActionType action) {
-    if (selectedAction == null) return 1.0;
-    return selectedAction == action ? 1.0 : 0.4;
-  }
+class MainScreen extends StatelessWidget {
+  const MainScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<MainProvider>();
+    final game = provider.game;
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -111,7 +52,6 @@ class _MainScreenState extends State<MainScreen> {
               /// GAME
               AspectRatio(
                 aspectRatio: 1,
-
                 child: GameWidget<ConnectFour>(
                   game: game,
                   overlayBuilderMap: {
@@ -120,7 +60,7 @@ class _MainScreenState extends State<MainScreen> {
                       onPlayAgain: () {
                         game.overlays.remove('WinOverlay');
                         game.resetGame();
-                        setState(() => selectedAction = null);
+                        provider.resetAction();
                       },
                     ),
                     'LoseOverlay': (_, game) => DialogWidget(
@@ -128,14 +68,14 @@ class _MainScreenState extends State<MainScreen> {
                       onPlayAgain: () {
                         game.overlays.remove('LoseOverlay');
                         game.resetGame();
-                        setState(() => selectedAction = null);
+                        provider.resetAction();
                       },
                     ),
                     'NoSpace': (_, game) => DialogWidget(
                       result: GameResult.noSpace,
                       onPlayAgain: () {
                         game.resetGame();
-                        setState(() => selectedAction = null);
+                        provider.resetAction();
                       },
                     ),
                   },
@@ -145,45 +85,33 @@ class _MainScreenState extends State<MainScreen> {
               /// ACTION BAR
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Opacity(
-                    opacity: _opacity(ActionType.singleExplosion),
+                children: ActionType.values.map((action) {
+                  return Opacity(
+                    opacity: provider.opacity(action),
                     child: IconWidget(
-                      iconPath: AssetImages.block_1explosion.path(
-                        AssetType.png,
-                      ),
-                      onTap: () => selectAction(ActionType.singleExplosion),
+                      iconPath: _iconPath(action),
+                      onTap: () => provider.selectAction(action),
                     ),
-                  ),
-                  Opacity(
-                    opacity: _opacity(ActionType.rowColumnExplosion),
-                    child: IconWidget(
-                      iconPath: AssetImages.column_1row_1deletion.path(
-                        AssetType.png,
-                      ),
-                      onTap: () => selectAction(ActionType.rowColumnExplosion),
-                    ),
-                  ),
-                  Opacity(
-                    opacity: _opacity(ActionType.swap),
-                    child: IconWidget(
-                      iconPath: AssetImages.swap.path(AssetType.png),
-                      onTap: () => selectAction(ActionType.swap),
-                    ),
-                  ),
-                  Opacity(
-                    opacity: _opacity(ActionType.undo),
-                    child: IconWidget(
-                      iconPath: AssetImages.undo_1move.path(AssetType.png),
-                      onTap: () => selectAction(ActionType.undo),
-                    ),
-                  ),
-                ],
+                  );
+                }).toList(),
               ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  String _iconPath(ActionType action) {
+    switch (action) {
+      case ActionType.singleExplosion:
+        return AssetImages.block_1explosion.path(AssetType.png);
+      case ActionType.rowColumnExplosion:
+        return AssetImages.column_1row_1deletion.path(AssetType.png);
+      case ActionType.swap:
+        return AssetImages.swap.path(AssetType.png);
+      case ActionType.undo:
+        return AssetImages.undo_1move.path(AssetType.png);
+    }
   }
 }
