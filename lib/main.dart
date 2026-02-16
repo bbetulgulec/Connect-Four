@@ -9,6 +9,7 @@ import 'package:connect_four/core/helper/nav_helper/navigation_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:provider/provider.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 final AudioPlayer mainPlayer = AudioPlayer();
 
@@ -20,6 +21,8 @@ FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Initialize the Mobile Ads SDK.
+  await MobileAds.instance.initialize();
 
   const AndroidInitializationSettings initializationSettingsAndroid =
       AndroidInitializationSettings('notification_icon');
@@ -59,8 +62,8 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => OnboardingProvider()),
-        ChangeNotifierProvider(create: (_)=> LoginProvider()),
-        ChangeNotifierProvider(create: (_)=> MainProvider())
+        ChangeNotifierProvider(create: (_) => LoginProvider()),
+        ChangeNotifierProvider(create: (_) => MainProvider()),
       ],
       child: const MyApp(),
     ),
