@@ -171,7 +171,14 @@ class Piece extends PositionComponent with TapCallbacks {
     }
 
     // 4️⃣ YAN KOMŞU → SWAP 🔄
+
+    // önce eski boyuta dön
+    first.add(
+      ScaleEffect.to(Vector2.all(1.0), EffectController(duration: 0.15)),
+    );
+
     game.swapPieces(first, this);
+    game.finishPlayerTurnAfterSkill();
 
     game.firstSelectedPiece = null;
     game.isSwapMode = false;
@@ -179,6 +186,9 @@ class Piece extends PositionComponent with TapCallbacks {
 
   @override
   bool onTapDown(TapDownEvent event) {
+    if (!game.isPlayerTurn || game.isGameOver) {
+      return false;
+    }
     // 🔁 1️⃣ SWAP MODU HER ŞEYDEN ÖNCE
     if (game.isSwapMode) {
       _handleSwap();
@@ -188,13 +198,20 @@ class Piece extends PositionComponent with TapCallbacks {
     // 💣 2️⃣ PATLATMA MODLARI
     if (isEnemy) {
       if (game.isSingleExplosion) {
-        explode();
+        explode(
+          onComplete: () {
+            game.applyGravity();
+            game.finishPlayerTurnAfterSkill();
+          },
+        );
         game.isSingleExplosion = false;
         return true;
       }
 
       if (game.isRowColumnExplosion) {
         breakAllRowAndColumn();
+        game.finishPlayerTurnAfterSkill();
+
         game.isRowColumnExplosion = false;
         return true;
       }

@@ -14,6 +14,7 @@ class ConnectFour extends FlameGame with TapCallbacks {
   bool isPlayerTurn = true;
   bool isSwapMode = false;
   Piece? firstSelectedPiece;
+  VoidCallback? onTurnEnded;
 
   late double cellSize;
   late Vector2 boardPosition;
@@ -24,6 +25,7 @@ class ConnectFour extends FlameGame with TapCallbacks {
 
   bool isSingleExplosion = false;
   bool isRowColumnExplosion = false;
+  VoidCallback? onSkillFinished;
 
   // 0 = boş, 1 = kırmızı, 2 = yeşil
   final List<List<int>> board = List.generate(
@@ -67,38 +69,38 @@ class ConnectFour extends FlameGame with TapCallbacks {
   }
 
   void applyGravity() {
-    bool moved;
+    for (int col = 0; col < cols; col++) {
+      int writeRow = rows - 1;
 
-    do {
-      moved = false;
+      for (int row = rows - 1; row >= 0; row--) {
+        if (board[row][col] != 0) {
+          if (row != writeRow) {
+            // board güncelle
+            board[writeRow][col] = board[row][col];
+            board[row][col] = 0;
 
-      // alttan yukarı sırala
-      final sortedPieces = List<Piece>.from(pieces)
-        ..sort((a, b) => b.row.compareTo(a.row));
+            // piece bul
+            final piece = pieces.firstWhere(
+              (p) => p.row == row && p.col == col,
+            );
 
-      for (final piece in sortedPieces) {
-        final belowRow = piece.row + 1;
+            piece.row = writeRow;
 
-        if (belowRow < rows && board[belowRow][piece.col] == 0) {
-          // board güncelle
-          board[piece.row][piece.col] = 0;
-          board[belowRow][piece.col] = piece.player;
+            final targetY =
+                boardPosition.y + writeRow * cellSize + cellSize / 2;
 
-          piece.row = belowRow;
+            piece.add(
+              MoveEffect.to(
+                Vector2(piece.position.x, targetY),
+                EffectController(duration: 0.25, curve: Curves.easeIn),
+              ),
+            );
+          }
 
-          final targetY = boardPosition.y + belowRow * cellSize + cellSize / 2;
-
-          piece.add(
-            MoveEffect.to(
-              Vector2(piece.position.x, targetY),
-              EffectController(duration: 0.22, curve: Curves.easeIn),
-            ),
-          );
-
-          moved = true; // ⬅️ ÇOK KRİTİK
+          writeRow--;
         }
       }
-    } while (moved); // 🔥 boşluk kalmayana kadar
+    }
   }
 
   void swapPieces(Piece a, Piece b) {
@@ -217,8 +219,14 @@ class ConnectFour extends FlameGame with TapCallbacks {
     _dropPiece(aiColumn, 2);
 
     if (!isGameOver) {
-      isPlayerTurn = true; // 🔓 tekrar sen
+      isPlayerTurn = true;
+      isSingleExplosion = false;
+      isRowColumnExplosion = false;
+      isSwapMode = false;
+      firstSelectedPiece = null;
     }
+
+    onTurnEnded?.call();
   }
 
   @override
@@ -339,6 +347,19 @@ class ConnectFour extends FlameGame with TapCallbacks {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       scoreNotifier.value = data.score;
     });
+  }
+
+  Future<void> finishPlayerTurnAfterSkill() async {
+    if (isGameOver) return;
+
+    isPlayerTurn = false;
+    saveGame();
+
+    await Future.delayed(const Duration(milliseconds: 400));
+
+    await _makeAiMove(); // AI oynasın
+    saveGame();
+    // BUNU EKLE
   }
 
   @override

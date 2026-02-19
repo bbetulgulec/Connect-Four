@@ -98,5 +98,6 @@ class HiveService {
       skills[mode.name] = skills[mode.name]! - 1;
       await box.put('skills', skills);
     }
+    
   }
 }

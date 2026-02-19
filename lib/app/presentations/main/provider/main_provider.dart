@@ -12,6 +12,18 @@ class MainProvider extends ChangeNotifier {
 
   MainProvider({ActiveGame? initialGame}) {
     _initGame(initialGame);
+
+    game.onSkillFinished = () async {
+      if (selectedAction != null) {
+        await HiveService.useSkill(selectedAction!);
+        completeSkill();
+        await game.finishPlayerTurnAfterSkill();
+      }
+    };
+
+    game.onTurnEnded = () {
+      resetAction(); // Bu metot selectedAction'ı null yapar ve notifyListeners() çağırır
+    };
   }
 
   void _initGame(ActiveGame? initialGame) {
@@ -29,10 +41,15 @@ class MainProvider extends ChangeNotifier {
   Future<void> selectAction(ActionType action) async {
     if (_isAdShowing) return;
 
+    if (selectedAction == action) {
+      completeSkill();
+      return;
+    }
+
     int count = HiveService.getSkillCount(action);
 
     if (count > 0) {
-      await HiveService.useSkill(action);
+      selectedAction = action;
       _activateAction(action);
       notifyListeners();
     } else {
@@ -41,6 +58,14 @@ class MainProvider extends ChangeNotifier {
 
       _showRewardedAd(action);
     }
+  }
+
+  Future<void> consumeSelectedSkill() async {
+    if (selectedAction == null) return;
+
+    await HiveService.useSkill(selectedAction!);
+
+    completeSkill();
   }
 
   void _activateAction(ActionType action) {
@@ -68,6 +93,16 @@ class MainProvider extends ChangeNotifier {
         // undo logic
         break;
     }
+  }
+
+  void completeSkill() {
+    selectedAction = null;
+
+    game.isSingleExplosion = false;
+    game.isRowColumnExplosion = false;
+    game.isSwapMode = false;
+
+    notifyListeners();
   }
 
   double opacity(ActionType action) {
@@ -116,9 +151,13 @@ class MainProvider extends ChangeNotifier {
 
           ad.fullScreenContentCallback = FullScreenContentCallback(
             onAdDismissedFullScreenContent: (ad) {
+              _isAdShowing = false; // 🔥 KRİTİK
+              notifyListeners();
               ad.dispose();
             },
             onAdFailedToShowFullScreenContent: (ad, error) {
+              _isAdShowing = false; // 🔥 KRİTİK
+              notifyListeners();
               ad.dispose();
             },
           );
@@ -129,12 +168,15 @@ class MainProvider extends ChangeNotifier {
 
               await HiveService.addSkill(action);
 
+              _isAdShowing = false; // 🔥 KRİTİK
               notifyListeners();
             },
           );
         },
         onAdFailedToLoad: (LoadAdError error) {
           debugPrint('Ad failed to load: $error');
+          _isAdShowing = false; // 🔥 KRİTİK
+          notifyListeners();
         },
       ),
     );

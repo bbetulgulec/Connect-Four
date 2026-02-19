@@ -99,7 +99,10 @@ class MainScreen extends StatelessWidget {
                   child: IconWidget(
                     iconPath: _iconPath(action),
                     badgeCount: provider.getSkillCount(action),
-                    onTap: () => provider.selectAction(action),
+                    onTap: () {
+                      provider.selectAction(action);
+                      debugPrint('basıldı');
+                    },
                     onLongComplete: () => provider.selectAction(action),
                   ),
                 );

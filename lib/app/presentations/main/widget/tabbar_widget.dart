@@ -23,7 +23,7 @@ class TabbarWidget extends StatelessWidget {
           },
           child: const Icon(Icons.replay, color: Colors.white, size: 30.0),
         ),
-        const SizedBox(width: 8), // İkonlar arası biraz boşluk
+        const SizedBox(width: 8), 
         GestureDetector(
           onTap: () => showDialog(
             context: context,
