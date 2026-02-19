@@ -7,6 +7,7 @@ import 'package:connect_four/app/presentations/onboarding/provider/onboarding_pr
 import 'package:connect_four/app/presentations/onboarding/view/onboarding_view.dart';
 import 'package:connect_four/core/helper/nav_helper/navigation_helper.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:provider/provider.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -21,7 +22,6 @@ FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Initialize the Mobile Ads SDK.
   await MobileAds.instance.initialize();
 
   const AndroidInitializationSettings initializationSettingsAndroid =
@@ -49,7 +49,7 @@ void main() async {
   final bool isMuted = HiveService.getData('voice')?['enabled'] ?? false;
 
   await mainPlayer.setSource(AssetSource('wav/squeaky_computer_chair.wav'));
-  await mainPlayer.setReleaseMode(ReleaseMode.loop); // Müziği döngüye al
+  await mainPlayer.setReleaseMode(ReleaseMode.loop);
 
   if (!isMuted) {
     await mainPlayer.setVolume(1.0);
@@ -58,16 +58,21 @@ void main() async {
     await mainPlayer.setVolume(0.0);
   }
 
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => OnboardingProvider()),
-        ChangeNotifierProvider(create: (_) => LoginProvider()),
-        ChangeNotifierProvider(create: (_) => MainProvider()),
-      ],
-      child: const MyApp(),
-    ),
-  );
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]).then((_) {
+    runApp(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => OnboardingProvider()),
+          ChangeNotifierProvider(create: (_) => LoginProvider()),
+          ChangeNotifierProvider(create: (_) => MainProvider()),
+        ],
+        child: const MyApp(),
+      ),
+    );
+  });
 }
 
 class MyApp extends StatelessWidget {

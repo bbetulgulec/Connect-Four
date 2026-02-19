@@ -1,12 +1,15 @@
+import 'package:connect_four/app/common/enum/action_mode.dart';
+import 'package:connect_four/app/presentations/main/view/main_screen.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 class HiveService {
   static const String _boxName = 'game_data';
+  static const String _boxSkill = 'game_skill';
 
   static Future<void> init() async {
     await Hive.initFlutter();
-    // Kutuyu açmayı unutma!
     await Hive.openBox(_boxName);
+    await Hive.openBox(_boxSkill);
   }
 
   // Aktif Oyunu Kaydet
@@ -53,5 +56,47 @@ class HiveService {
   // Aktif oyunu silmek için (Önceki kodunda deleteData vardı, isim uyumu için ekleyebilirsin)
   static Future<void> deleteActiveGame() async {
     await deleteData('current_game');
+  }
+
+  // ---------------- SKILL SİSTEMİ ----------------
+
+  static Map<String, int> getSkills() {
+    final box = Hive.box(_boxSkill);
+    final data = box.get('skills');
+
+    if (data != null) {
+      return Map<String, int>.from(data);
+    }
+
+    // Varsayılan değerler
+    return {
+      ActionMode.singleExplosion.name: 0,
+      ActionMode.rowColumnExplosion.name: 0,
+      ActionMode.swap.name: 0,
+    };
+  }
+
+  static int getSkillCount(ActionType mode) {
+    final skills = getSkills();
+    return skills[mode.name] ?? 0;
+  }
+
+  static Future<void> addSkill(ActionType mode) async {
+    final box = Hive.box(_boxSkill);
+    final skills = getSkills();
+
+    skills[mode.name] = (skills[mode.name] ?? 0) + 1;
+
+    await box.put('skills', skills);
+  }
+
+  static Future<void> useSkill(ActionType mode) async {
+    final box = Hive.box(_boxSkill);
+    final skills = getSkills();
+
+    if ((skills[mode.name] ?? 0) > 0) {
+      skills[mode.name] = skills[mode.name]! - 1;
+      await box.put('skills', skills);
+    }
   }
 }

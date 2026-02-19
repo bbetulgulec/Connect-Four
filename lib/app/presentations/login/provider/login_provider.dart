@@ -24,6 +24,8 @@ class LoginProvider extends ChangeNotifier {
 
     if (savedData != null) {
       Navigation.pushAndRemoveAll(page: MainScreen());
+    } else {
+      newGame();
     }
   }
 

@@ -3,10 +3,12 @@ import 'package:connect_four/core/service/hive_service.dart';
 import 'package:connect_four/app/presentations/main/view/main_screen.dart';
 import 'package:connect_four/app/presentations/main/widget/connect_four.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class MainProvider extends ChangeNotifier {
   late final ConnectFour game;
   ActionType? selectedAction;
+  bool _isAdShowing = false;
 
   MainProvider({ActiveGame? initialGame}) {
     _initGame(initialGame);
@@ -24,7 +26,24 @@ class MainProvider extends ChangeNotifier {
     game = ConnectFour(initialGame: startingGame);
   }
 
-  void selectAction(ActionType action) {
+  Future<void> selectAction(ActionType action) async {
+    if (_isAdShowing) return;
+
+    int count = HiveService.getSkillCount(action);
+
+    if (count > 0) {
+      await HiveService.useSkill(action);
+      _activateAction(action);
+      notifyListeners();
+    } else {
+      _isAdShowing = true;
+      notifyListeners();
+
+      _showRewardedAd(action);
+    }
+  }
+
+  void _activateAction(ActionType action) {
     selectedAction = action;
 
     game.isSingleExplosion = false;
@@ -46,11 +65,9 @@ class MainProvider extends ChangeNotifier {
         break;
 
       case ActionType.undo:
-        game.isRowColumnExplosion = true;
+        // undo logic
         break;
     }
-
-    notifyListeners();
   }
 
   double opacity(ActionType action) {
@@ -82,6 +99,44 @@ class MainProvider extends ChangeNotifier {
       context,
       MaterialPageRoute(builder: (_) => const MainScreen()),
       (route) => false,
+    );
+  }
+
+  int getSkillCount(ActionType action) {
+    return HiveService.getSkillCount(action);
+  }
+
+  void _showRewardedAd(ActionType action) {
+    RewardedAd.load(
+      adUnitId: "ca-app-pub-8804562918756370/2577297808",
+      request: const AdRequest(),
+      rewardedAdLoadCallback: RewardedAdLoadCallback(
+        onAdLoaded: (RewardedAd ad) {
+          debugPrint('Ad loaded');
+
+          ad.fullScreenContentCallback = FullScreenContentCallback(
+            onAdDismissedFullScreenContent: (ad) {
+              ad.dispose();
+            },
+            onAdFailedToShowFullScreenContent: (ad, error) {
+              ad.dispose();
+            },
+          );
+
+          ad.show(
+            onUserEarnedReward: (ad, reward) async {
+              debugPrint('Reward earned');
+
+              await HiveService.addSkill(action);
+
+              notifyListeners();
+            },
+          );
+        },
+        onAdFailedToLoad: (LoadAdError error) {
+          debugPrint('Ad failed to load: $error');
+        },
+      ),
     );
   }
 }
