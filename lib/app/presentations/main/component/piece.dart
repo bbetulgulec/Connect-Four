@@ -201,7 +201,8 @@ class Piece extends PositionComponent with TapCallbacks {
         explode(
           onComplete: () {
             game.applyGravity();
-            game.finishPlayerTurnAfterSkill();
+            game.onSkillFinished?.call();
+           // game.finishPlayerTurnAfterSkill();
           },
         );
         game.isSingleExplosion = false;

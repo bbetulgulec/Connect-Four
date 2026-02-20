@@ -4,8 +4,8 @@ class IconWidget extends StatefulWidget {
   final String iconPath;
   final double size;
   final BoxFit fit;
-  final VoidCallback? onTap;        
-  final VoidCallback? onLongComplete; 
+  final VoidCallback? onTap;
+  final VoidCallback? onLongComplete;
   final int? badgeCount;
 
   const IconWidget({
@@ -67,7 +67,7 @@ class _IconWidgetState extends State<IconWidget>
       width: widget.size,
       height: widget.size,
       child: GestureDetector(
-        onTap: hasSkill ? widget.onTap : null,
+        onTap: widget.onTap,
         onLongPressStart: hasSkill ? null : (_) => _startLongPress(),
         onLongPressEnd: hasSkill ? null : (_) => _cancelLongPress(),
         onLongPressCancel: hasSkill ? null : _cancelLongPress,
@@ -75,7 +75,6 @@ class _IconWidgetState extends State<IconWidget>
           alignment: Alignment.center,
           clipBehavior: Clip.none,
           children: [
-
             /// ICON
             Image.asset(
               widget.iconPath,
@@ -92,7 +91,7 @@ class _IconWidgetState extends State<IconWidget>
                   builder: (_, _) {
                     return CircularProgressIndicator(
                       color: Colors.white,
-                      
+
                       value: _controller.value,
                       strokeWidth: 12,
                     );
@@ -111,8 +110,10 @@ class _IconWidgetState extends State<IconWidget>
                     color: Colors.red,
                     shape: BoxShape.circle,
                   ),
-                  constraints:
-                      const BoxConstraints(minWidth: 18, minHeight: 18),
+                  constraints: const BoxConstraints(
+                    minWidth: 18,
+                    minHeight: 18,
+                  ),
                   child: Text(
                     widget.badgeCount! > 99
                         ? "99+"

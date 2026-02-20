@@ -26,6 +26,9 @@ class ConnectFour extends FlameGame with TapCallbacks {
   bool isSingleExplosion = false;
   bool isRowColumnExplosion = false;
   VoidCallback? onSkillFinished;
+  int? lastPlayerRow;
+  int? lastPlayerCol;
+  Piece? lastPlayerPiece;
 
   // 0 = boş, 1 = kırmızı, 2 = yeşil
   final List<List<int>> board = List.generate(
@@ -36,7 +39,7 @@ class ConnectFour extends FlameGame with TapCallbacks {
   int player1Score = 0;
   int player2Score = 0;
 
-  final List<Piece> pieces = []; // ← Yeni liste ekle
+  final List<Piece> pieces = [];
 
   final ValueNotifier<int> scoreNotifier = ValueNotifier<int>(0);
 
@@ -142,6 +145,7 @@ class ConnectFour extends FlameGame with TapCallbacks {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             scoreNotifier.value = player1Score;
           });
+          
         }
         if (_checkWin(player)) {
           isGameOver = true;

@@ -1,4 +1,5 @@
 import 'package:connect_four/app/data/models/active_game.dart';
+import 'package:connect_four/app/presentations/main/widget/award_winning_abs_dialog.dart';
 import 'package:connect_four/core/service/hive_service.dart';
 import 'package:connect_four/app/presentations/main/view/main_screen.dart';
 import 'package:connect_four/app/presentations/main/widget/connect_four.dart';
@@ -22,7 +23,7 @@ class MainProvider extends ChangeNotifier {
     };
 
     game.onTurnEnded = () {
-      resetAction(); // Bu metot selectedAction'ı null yapar ve notifyListeners() çağırır
+      resetAction();
     };
   }
 
@@ -38,8 +39,13 @@ class MainProvider extends ChangeNotifier {
     game = ConnectFour(initialGame: startingGame);
   }
 
-  Future<void> selectAction(ActionType action) async {
-    if (_isAdShowing) return;
+  Future<void> selectAction(ActionType action, BuildContext context) async {
+    debugPrint("method çalıştı");
+
+    if (_isAdShowing) {
+      debugPrint("reklam açık olduğu için return");
+      return;
+    }
 
     if (selectedAction == action) {
       completeSkill();
@@ -47,17 +53,42 @@ class MainProvider extends ChangeNotifier {
     }
 
     int count = HiveService.getSkillCount(action);
+    debugPrint("count: $count");
 
     if (count > 0) {
       selectedAction = action;
       _activateAction(action);
       notifyListeners();
     } else {
-      _isAdShowing = true;
-      notifyListeners();
 
-      _showRewardedAd(action);
+      await showDialog(
+        context: context,
+        builder: (dialogContext) => AwardWinningAbsDialog(
+          watch: () async {
+            debugPrint("WATCH BASILDI");
+
+            Navigator.of(dialogContext).pop();
+
+            await Future.delayed(const Duration(milliseconds: 200));
+
+            await _showRewardedAd(action);
+          },
+          close: () => Navigator.of(dialogContext).pop(),
+        ),
+      );
     }
+  }
+
+  Future<void> selectActionLong(ActionType action) async {
+    if (_isAdShowing) return;
+
+    _isAdShowing = true;
+    notifyListeners();
+
+    _showRewardedAd(action);
+
+    _isAdShowing = false;
+    notifyListeners();
   }
 
   Future<void> consumeSelectedSkill() async {
@@ -90,7 +121,6 @@ class MainProvider extends ChangeNotifier {
         break;
 
       case ActionType.undo:
-        // undo logic
         break;
     }
   }
@@ -141,7 +171,7 @@ class MainProvider extends ChangeNotifier {
     return HiveService.getSkillCount(action);
   }
 
-  void _showRewardedAd(ActionType action) {
+  Future<void> _showRewardedAd(ActionType action) async {
     RewardedAd.load(
       adUnitId: "ca-app-pub-8804562918756370/2577297808",
       request: const AdRequest(),

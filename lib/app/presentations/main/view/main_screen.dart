@@ -18,7 +18,7 @@ class MainScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<MainProvider>();
+    final provider = context.read<MainProvider>();
     final game = provider.game;
 
     return Scaffold(
@@ -100,10 +100,10 @@ class MainScreen extends StatelessWidget {
                     iconPath: _iconPath(action),
                     badgeCount: provider.getSkillCount(action),
                     onTap: () {
-                      provider.selectAction(action);
+                      provider.selectAction(action,context);
                       debugPrint('basıldı');
                     },
-                    onLongComplete: () => provider.selectAction(action),
+                    onLongComplete: () => provider.selectActionLong(action),
                   ),
                 );
               }).toList(),
