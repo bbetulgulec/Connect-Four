@@ -41,7 +41,6 @@ class _DialogWidgetState extends State<DialogWidget> {
     super.dispose();
   }
 
-  // Yıldız şekli fonksiyonu (senin verdiğin – ufak düzeltmelerle)
   Path drawStar(Size size) {
     double degToRad(double deg) => deg * (math.pi / 180.0);
     const numberOfPoints = 5;
@@ -119,10 +118,7 @@ class _DialogWidgetState extends State<DialogWidget> {
                     ],
                   ),
                   borderRadius: BorderRadius.circular(32),
-                  border: Border.all(
-                    color: mainColor.withAlpha(50),
-                    width: 2,
-                  ),
+                  border: Border.all(color: mainColor.withAlpha(50), width: 2),
                   boxShadow: [
                     BoxShadow(
                       color: mainColor.withAlpha(20),
@@ -138,7 +134,7 @@ class _DialogWidgetState extends State<DialogWidget> {
                     Text(
                       title,
                       style: TextStyle(
-                        fontSize: 48,
+                        fontSize: 36,
                         fontWeight: FontWeight.bold,
                         color: mainColor,
                         shadows: [Shadow(color: mainColor, blurRadius: 15)],
@@ -146,14 +142,16 @@ class _DialogWidgetState extends State<DialogWidget> {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 16),
-                    Text(
-                      subtitle,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        color: Colors.white,
-                        height: 1.3,
+                    Expanded(
+                      child: Text(
+                        subtitle,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          color: Colors.white,
+                          height: 1.3,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
-                      textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 40),
                     Expanded(

@@ -145,7 +145,9 @@ class ConnectFour extends FlameGame with TapCallbacks {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             scoreNotifier.value = player1Score;
           });
-          
+          lastPlayerRow = row;
+          lastPlayerCol = col;
+          lastPlayerPiece = pieces.last;
         }
         if (_checkWin(player)) {
           isGameOver = true;
@@ -387,5 +389,44 @@ class ConnectFour extends FlameGame with TapCallbacks {
     if (initialGame != null) {
       loadFromHive(initialGame!);
     }
+  }
+
+  Future<void> undoLastMove() async {
+    if (lastPlayerPiece == null ||
+        lastPlayerRow == null ||
+        lastPlayerCol == null)
+      return;
+
+    final piece = lastPlayerPiece!;
+
+    // Board temizle
+    board[lastPlayerRow!][lastPlayerCol!] = 0;
+
+    // Skor azalt
+    if (player1Score > 0) {
+      player1Score--;
+      scoreNotifier.value = player1Score;
+    }
+
+    // Yukarı animasyon
+    piece.add(
+      MoveEffect.to(
+        Vector2(piece.position.x, boardPosition.y - cellSize * 2),
+        EffectController(duration: 0.6, curve: Curves.easeInBack),
+        onComplete: () {
+          piece.removeFromParent();
+          pieces.remove(piece);
+        },
+      ),
+    );
+
+    // Reset last move
+    lastPlayerPiece = null;
+    lastPlayerRow = null;
+    lastPlayerCol = null;
+
+    await Future.delayed(const Duration(milliseconds: 600));
+
+    await finishPlayerTurnAfterSkill();
   }
 }

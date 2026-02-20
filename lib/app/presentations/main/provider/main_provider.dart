@@ -60,7 +60,6 @@ class MainProvider extends ChangeNotifier {
       _activateAction(action);
       notifyListeners();
     } else {
-
       await showDialog(
         context: context,
         builder: (dialogContext) => AwardWinningAbsDialog(
@@ -121,8 +120,20 @@ class MainProvider extends ChangeNotifier {
         break;
 
       case ActionType.undo:
+        _performUndo();
+
         break;
     }
+  }
+
+  Future<void> _performUndo() async {
+    if (game.isGameOver) return;
+
+    await game.undoLastMove();
+
+    await HiveService.useSkill(ActionType.undo);
+
+    completeSkill();
   }
 
   void completeSkill() {
