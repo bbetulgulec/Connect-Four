@@ -1,6 +1,8 @@
 import 'dart:ui';
+import 'package:connect_four/app/common/color/app_color.dart';
 import 'package:connect_four/app/presentations/login/provider/login_provider.dart';
 import 'package:connect_four/app/presentations/login/widget/build_setting_row.dart';
+import 'package:connect_four/core/extensions/build_context_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -9,7 +11,7 @@ class DialogWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.read<LoginProvider>();
+    final provider = context.watch<LoginProvider>();
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -18,17 +20,20 @@ class DialogWidget extends StatelessWidget {
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
           child: Container(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.symmetric(
+              horizontal: context.width16,
+              vertical: context.height20,
+            ),
             decoration: BoxDecoration(
-              color: Colors.white.withAlpha(55),
+              color: AppColor.white.withAlpha(55),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white.withAlpha(60)),
+              border: Border.all(color: AppColor.white.withAlpha(60)),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 _buildHeader(context),
-                const SizedBox(height: 16),
+                SizedBox(height: context.height20),
 
                 // BİLDİRİM SWITCH
                 BuildSettingRow(
@@ -56,7 +61,6 @@ class DialogWidget extends StatelessWidget {
                     provider.vibrationSwitch(value);
                   },
                 ),
-                const SizedBox(height: 16),
               ],
             ),
           ),
@@ -88,6 +92,4 @@ class DialogWidget extends StatelessWidget {
       ],
     );
   }
-
-
 }

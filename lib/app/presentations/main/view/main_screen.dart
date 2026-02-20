@@ -1,5 +1,6 @@
 import 'package:connect_four/app/presentations/main/widget/banner_add_widget.dart';
 import 'package:connect_four/app/presentations/main/widget/tabbar_widget.dart';
+import 'package:connect_four/core/extensions/build_context_extensions.dart';
 import 'package:connect_four/core/service/hive_service.dart';
 import 'package:connect_four/app/presentations/main/provider/main_provider.dart';
 import 'package:connect_four/app/presentations/main/widget/connect_four.dart';
@@ -32,10 +33,9 @@ class MainScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 40, left: 310),
-              child: Align(
-                alignment: Alignment.topRight,
+            SafeArea(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: context.width10),
                 child: TabbarWidget(),
               ),
             ),
@@ -100,7 +100,7 @@ class MainScreen extends StatelessWidget {
                     iconPath: _iconPath(action),
                     badgeCount: provider.getSkillCount(action),
                     onTap: () {
-                      provider.selectAction(action,context);
+                      provider.selectAction(action, context);
                       debugPrint('basıldı');
                     },
                     onLongComplete: () => provider.selectActionLong(action),

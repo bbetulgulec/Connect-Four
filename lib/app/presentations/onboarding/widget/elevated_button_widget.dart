@@ -1,3 +1,4 @@
+import 'package:connect_four/app/common/color/app_color.dart';
 import 'package:flutter/material.dart';
 
 class ElevatedButtonWidget extends StatelessWidget {
@@ -11,6 +12,15 @@ class ElevatedButtonWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(onPressed: onPressed, child: Text(text));
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ButtonStyle(
+          backgroundColor: WidgetStatePropertyAll(AppColor.redButton),
+        ),
+        child: Text(text, style: TextStyle(color: AppColor.white)),
+      ),
+    );
   }
 }

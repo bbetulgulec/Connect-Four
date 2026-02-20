@@ -1,3 +1,4 @@
+import 'package:connect_four/app/common/color/app_color.dart';
 import 'package:flutter/material.dart';
 
 class SwitchWidget extends StatelessWidget {
@@ -9,9 +10,9 @@ class SwitchWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Switch(
       onChanged: onChanged,
-      activeThumbColor: Colors.redAccent,
+      activeThumbColor: AppColor.redAccent,
       activeTrackColor: Colors.redAccent.shade100,
-      inactiveThumbColor: Colors.grey,
+      inactiveThumbColor: AppColor.grey,
       inactiveTrackColor: Colors.grey.shade100,
       value: value,
     );

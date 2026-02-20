@@ -1,3 +1,4 @@
+import 'package:connect_four/app/common/color/app_color.dart';
 import 'package:flutter/material.dart';
 
 class TitleWidget extends StatelessWidget {
@@ -11,7 +12,7 @@ class TitleWidget extends StatelessWidget {
       style: TextStyle(
         fontWeight: FontWeight.w900,
         fontFamily: "Nunito",
-        color: Colors.white,
+        color: AppColor.white,
         fontSize: 50,
         shadows: [
           Shadow(blurRadius: 20, color: Colors.pinkAccent),

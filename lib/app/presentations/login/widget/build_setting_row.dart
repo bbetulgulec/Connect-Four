@@ -1,3 +1,4 @@
+import 'package:connect_four/app/common/color/app_color.dart';
 import 'package:connect_four/app/presentations/login/widget/switch_widget.dart';
 import 'package:flutter/material.dart';
 
@@ -14,18 +15,15 @@ class BuildSettingRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        children: [
-          Text(
-            title,
-            style: const TextStyle(fontSize: 20, color: Colors.white),
-          ),
-          const Spacer(),
-          SwitchWidget(value: value, onChanged: onChanged),
-        ],
-      ),
+    return Row(
+      children: [
+        Text(
+          title,
+          style: const TextStyle(fontSize: 20, color: AppColor.white),
+        ),
+        const Spacer(),
+        SwitchWidget(value: value, onChanged: onChanged),
+      ],
     );
   }
 }

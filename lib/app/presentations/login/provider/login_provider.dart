@@ -73,6 +73,9 @@ class LoginProvider extends ChangeNotifier {
   }
 
   Future<void> voiceSwitch(bool value) async {
+    isMuted = value;
+    notifyListeners();
+
     await HiveService.saveData('voice', {'enabled': value});
 
     if (value) {

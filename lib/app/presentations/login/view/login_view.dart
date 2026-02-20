@@ -1,9 +1,11 @@
+import 'package:connect_four/app/common/color/app_color.dart';
 import 'package:connect_four/app/presentations/login/provider/login_provider.dart';
 import 'package:connect_four/app/presentations/login/widget/dialog_widget.dart';
 import 'package:connect_four/app/presentations/login/widget/material_button_widget.dart';
 import 'package:connect_four/app/presentations/login/widget/setting_button.dart';
 import 'package:connect_four/app/presentations/login/widget/title_widget.dart';
 import 'package:connect_four/core/extensions/asset_extension.dart';
+import 'package:connect_four/core/extensions/build_context_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -31,33 +33,31 @@ class LoginView extends StatelessWidget {
 
                 children: [
                   TitleWidget(),
-                  const SizedBox(height: 16),
+                  SizedBox(height: context.height32),
 
                   MaterialButtonWidget(
                     text: "Devam Et",
-                    color: Colors.redAccent,
+                    color: AppColor.redButton,
                     onPressed: () {
                       provider.contuniePage();
                     },
                   ),
 
-                  const SizedBox(height: 16),
+                  SizedBox(height: context.height16),
 
                   MaterialButtonWidget(
                     text: "Yeni Oyun",
-                    color: Colors.yellow,
+                    color: AppColor.yellow,
                     onPressed: () async {
                       provider.newGame();
                     },
                   ),
-
-                  const SizedBox(height: 60),
                 ],
               ),
             ),
 
             Padding(
-              padding: const EdgeInsets.only(top: 30.0),
+              padding: EdgeInsets.only(top: context.height32),
               child: Align(
                 alignment: AlignmentGeometry.topRight,
 

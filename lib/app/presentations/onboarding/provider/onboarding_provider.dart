@@ -21,8 +21,6 @@ class OnboardingProvider extends ChangeNotifier {
     } else {
       // Veriyi kaydet
       await HiveService.saveData('onboarding', {'shown': true});
-
-      // "Benim işim bitti, şimdi ne yapacaksan yap" (Navigasyon vs.)
       onFinish();
     }
   }

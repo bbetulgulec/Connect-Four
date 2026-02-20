@@ -6,17 +6,19 @@ class TextTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(title,
-    textAlign: TextAlign.center,
+    return Text(
+      title,
+      textAlign: TextAlign.center,
       style: TextStyle(
         fontWeight: FontWeight.w900,
         fontFamily: "Nunito",
         color: Colors.white,
-        fontSize: 50,
+        fontSize: 32,
         shadows: [
           Shadow(blurRadius: 20, color: Colors.deepOrangeAccent),
           Shadow(blurRadius: 40, color: Colors.redAccent),
         ],
-      ),);
+      ),
+    );
   }
 }

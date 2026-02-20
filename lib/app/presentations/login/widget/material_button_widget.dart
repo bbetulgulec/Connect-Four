@@ -1,4 +1,5 @@
 import 'package:connect_four/app/presentations/login/provider/login_provider.dart';
+import 'package:connect_four/core/extensions/build_context_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -24,7 +25,7 @@ class _MaterialButtonWidgetState extends State<MaterialButtonWidget> {
     final provider = context.read<LoginProvider>();
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 30.0),
+      padding: EdgeInsets.symmetric(horizontal: context.height32),
       child: SizedBox(
         width: double.infinity,
         child: Container(
@@ -51,7 +52,10 @@ class _MaterialButtonWidgetState extends State<MaterialButtonWidget> {
               backgroundColor: Colors.transparent,
               foregroundColor: Colors.white,
               elevation: 0,
-              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 18),
+              padding: EdgeInsets.symmetric(
+                horizontal: context.width40,
+                vertical: context.height20,
+              ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(40),
               ),
