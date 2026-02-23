@@ -82,6 +82,7 @@ class MainScreen extends StatelessWidget {
                   'NoSpace': (_, game) => DialogWidget(
                     result: GameResult.noSpace,
                     onPlayAgain: () {
+                      game.overlays.remove('NoSpace'); // BURAYA EKLE (Eksikti)
                       game.resetGame();
                       provider.resetAction();
                     },

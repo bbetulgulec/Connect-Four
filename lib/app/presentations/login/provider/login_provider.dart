@@ -22,7 +22,7 @@ class LoginProvider extends ChangeNotifier {
   void contuniePage() {
     final savedData = HiveService.getData('current_game');
 
-    if (savedData != null) {
+    if (savedData != null && savedData['isGameOver'] != true ) {
       Navigation.pushAndRemoveAll(page: MainScreen());
     } else {
       newGame();
