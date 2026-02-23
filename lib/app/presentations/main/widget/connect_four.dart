@@ -157,7 +157,7 @@ class ConnectFour extends FlameGame with TapCallbacks {
           isGameOver = true;
           final isWin = player == 1;
 
-          // 🔥 Eski storage yerine yeni servisimizi kullanıyoruz
+          // Eski storage yerine yeni servisimizi kullanıyoruz
           if (isWin) {
             final currentProgress = HiveService.getProgress();
             final currentScore = scoreNotifier.value;
@@ -424,6 +424,8 @@ class ConnectFour extends FlameGame with TapCallbacks {
       ),
     );
 
+    applyGravity();
+
     // Reset last move
     lastPlayerPiece = null;
     lastPlayerRow = null;
@@ -431,6 +433,6 @@ class ConnectFour extends FlameGame with TapCallbacks {
 
     await Future.delayed(const Duration(milliseconds: 600));
 
-    await finishPlayerTurnAfterSkill();
+    onSkillFinished?.call();
   }
 }

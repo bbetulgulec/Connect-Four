@@ -119,6 +119,7 @@ class Piece extends PositionComponent with TapCallbacks {
           // 🔽 TÜM PATLAMALAR BİTTİ
           if (finished == toRemove.length) {
             game.applyGravity(); // ✅ 1 KERE
+            game.onSkillFinished?.call();
           }
         },
       );
@@ -178,8 +179,10 @@ class Piece extends PositionComponent with TapCallbacks {
     );
 
     game.swapPieces(first, this);
-    game.finishPlayerTurnAfterSkill();
 
+    Future.delayed(const Duration(milliseconds: 1000), () {
+      game.onSkillFinished?.call();
+    });
     game.firstSelectedPiece = null;
     game.isSwapMode = false;
   }
@@ -202,7 +205,7 @@ class Piece extends PositionComponent with TapCallbacks {
           onComplete: () {
             game.applyGravity();
             game.onSkillFinished?.call();
-           // game.finishPlayerTurnAfterSkill();
+            // game.finishPlayerTurnAfterSkill();
           },
         );
         game.isSingleExplosion = false;

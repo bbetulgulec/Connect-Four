@@ -92,22 +92,26 @@ class MainScreen extends StatelessWidget {
             ),
 
             /// ACTION BAR
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: ActionType.values.map((action) {
-                return Opacity(
-                  opacity: provider.opacity(action),
-                  child: IconWidget(
-                    iconPath: _iconPath(action),
-                    badgeCount: provider.getSkillCount(action),
-                    onTap: () {
-                      provider.selectAction(action, context);
-                      debugPrint('basıldı');
-                    },
-                    onLongComplete: () => provider.selectActionLong(action),
-                  ),
+            Consumer<MainProvider>(
+              builder: (context, mainProvider, child) {
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: ActionType.values.map((action) {
+                    return Opacity(
+                      opacity: provider.opacity(action),
+                      child: IconWidget(
+                        iconPath: _iconPath(action),
+                        badgeCount: provider.getSkillCount(action),
+                        onTap: () {
+                          provider.selectAction(action, context);
+                          debugPrint('basıldı');
+                        },
+                        onLongComplete: () => provider.selectActionLong(action),
+                      ),
+                    );
+                  }).toList(),
                 );
-              }).toList(),
+              },
             ),
             BannerAdWidget(),
           ],
