@@ -22,7 +22,7 @@ class LoginProvider extends ChangeNotifier {
   void contuniePage() {
     final savedData = HiveService.getData('current_game');
 
-    if (savedData != null && savedData['isGameOver'] != true ) {
+    if (savedData != null && savedData['isGameOver'] != true) {
       Navigation.pushAndRemoveAll(page: MainScreen());
     } else {
       newGame();
@@ -73,26 +73,30 @@ class LoginProvider extends ChangeNotifier {
   }
 
   Future<void> voiceSwitch(bool value) async {
-    isMuted = value;
+    isMuted = !value;
     notifyListeners();
 
     await HiveService.saveData('voice', {'enabled': value});
 
     if (value) {
-      await mainPlayer.setVolume(0.0);
-      await mainPlayer.pause();
-    } else {
       await mainPlayer.setVolume(1.0);
       await mainPlayer.resume();
+    } else {
+      await mainPlayer.setVolume(0.0);
+      await mainPlayer.pause();
     }
   }
 
   Future<void> vibrationSwitch(bool value) async {
+    isClosedVibration = value;
+    notifyListeners();
+
     await HiveService.saveData('vibration', {'enabled': value});
+
     if (value) {
       Vibration.cancel();
     } else {
-      if (await Vibration.hasVibrator()) {
+      if (await Vibration.hasVibrator() == true) {
         Vibration.vibrate(duration: 50);
       }
     }

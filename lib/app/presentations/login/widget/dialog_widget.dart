@@ -47,7 +47,7 @@ class DialogWidget extends StatelessWidget {
                 // SES SWITCH
                 BuildSettingRow(
                   title: "Sesler :",
-                  value: provider.isMuted,
+                  value: !provider.isMuted,
                   onChanged: (bool value) async {
                     provider.voiceSwitch(value);
                   },

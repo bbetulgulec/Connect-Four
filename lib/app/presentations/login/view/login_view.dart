@@ -39,6 +39,7 @@ class LoginView extends StatelessWidget {
                     text: "Devam Et",
                     color: AppColor.redButton,
                     onPressed: () {
+                      provider.longAlarmBuzz();
                       provider.contuniePage();
                     },
                   ),
@@ -49,6 +50,7 @@ class LoginView extends StatelessWidget {
                     text: "Yeni Oyun",
                     color: AppColor.yellow,
                     onPressed: () async {
+                      provider.longAlarmBuzz();
                       provider.newGame();
                     },
                   ),
