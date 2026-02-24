@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class MainProvider extends ChangeNotifier {
-  late  ConnectFour game;
+  late ConnectFour game;
   ActionType? selectedAction;
   bool _isAdShowing = false;
 
@@ -171,7 +171,7 @@ class MainProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void resetGame(BuildContext context) {
+  void resetGame() {
     // Hive'daki aktif oyunu sil
     HiveService.deleteData('current_game');
 
@@ -181,16 +181,6 @@ class MainProvider extends ChangeNotifier {
     selectedAction = null;
 
     notifyListeners();
-
-    // Dialog kapat
-    Navigator.of(context).pop();
-
-    // Ana ekrana temiz şekilde dön
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (_) => const MainScreen()),
-      (route) => false,
-    );
   }
 
   int getSkillCount(ActionType action) {
@@ -245,9 +235,16 @@ class MainProvider extends ChangeNotifier {
         builder: (context) =>
             const OpenDialogWidget(initialAction: ActionType.singleExplosion),
       ).then((_) {
-        // Diyalog kapandığında (Anladım'a basıldığında) Hive'a kaydet
         HiveService.saveData('settings', {'tutorialSeen': true});
       });
     }
+  }
+
+  void afterDialogClosed() {
+    if (!game.isGameOver) return;
+
+    resetAction();
+    game.resetGame();
+    notifyListeners();
   }
 }

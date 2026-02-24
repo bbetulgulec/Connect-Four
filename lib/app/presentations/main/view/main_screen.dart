@@ -6,6 +6,7 @@ import 'package:connect_four/app/presentations/main/widget/connect_four.dart';
 import 'package:connect_four/app/presentations/main/widget/icon_widget.dart';
 import 'package:connect_four/app/presentations/main/widget/scor_text_widget.dart';
 import 'package:connect_four/core/extensions/asset_extension.dart';
+import 'package:connect_four/core/service/hive_service.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:connect_four/app/presentations/main/widget/dialog_widget.dart';
@@ -13,8 +14,32 @@ import 'package:provider/provider.dart';
 
 enum ActionType { singleExplosion, rowColumnExplosion, swap, undo }
 
-class MainScreen extends StatelessWidget {
+class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
+
+  @override
+  State<MainScreen> createState() => _MainScreenState();
+}
+
+class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.detached) {
+      HiveService.deleteData('current_game');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,25 +88,28 @@ class MainScreen extends StatelessWidget {
                   'WinOverlay': (_, game) => DialogWidget(
                     result: GameResult.win,
                     onPlayAgain: () {
+                      final provider = context.read<MainProvider>();
+
+                      provider.game.resetGame();
                       game.overlays.remove('WinOverlay');
-                      game.resetGame();
-                      provider.resetAction();
                     },
                   ),
                   'LoseOverlay': (_, game) => DialogWidget(
                     result: GameResult.lose,
                     onPlayAgain: () {
+                      final provider = context.read<MainProvider>();
+
+                      provider.game.resetGame();
                       game.overlays.remove('LoseOverlay');
-                      game.resetGame();
-                      provider.resetAction();
                     },
                   ),
                   'NoSpace': (_, game) => DialogWidget(
                     result: GameResult.noSpace,
                     onPlayAgain: () {
+                      final provider = context.read<MainProvider>();
+
+                      provider.game.resetGame();
                       game.overlays.remove('NoSpace'); // BURAYA EKLE (Eksikti)
-                      game.resetGame();
-                      provider.resetAction();
                     },
                   ),
                 },

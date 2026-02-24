@@ -158,7 +158,6 @@ class ConnectFour extends FlameGame with TapCallbacks {
           isGameOver = true;
 
           HiveService.deleteActiveGame();
-          resetGame();
           isGameOver = true;
           final isWin = player == 1;
 

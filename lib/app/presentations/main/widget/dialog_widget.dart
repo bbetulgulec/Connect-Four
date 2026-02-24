@@ -1,7 +1,9 @@
 import 'dart:math' as math;
 
 import 'package:confetti/confetti.dart';
+import 'package:connect_four/app/presentations/main/provider/main_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 enum GameResult { win, lose, noSpace }
 
@@ -35,11 +37,15 @@ class _DialogWidgetState extends State<DialogWidget> {
     }
   }
 
+ 
+
   @override
-  void dispose() {
-    _confettiController.dispose();
-    super.dispose();
-  }
+void dispose() {
+  _confettiController.dispose();
+
+  
+  super.dispose();
+}
 
   Path drawStar(Size size) {
     double degToRad(double deg) => deg * (math.pi / 180.0);
