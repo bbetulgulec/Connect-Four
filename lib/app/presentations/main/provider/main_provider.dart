@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class MainProvider extends ChangeNotifier {
-  late final ConnectFour game;
+  late  ConnectFour game;
   ActionType? selectedAction;
   bool _isAdShowing = false;
 
@@ -38,6 +38,20 @@ class MainProvider extends ChangeNotifier {
         (savedMap != null ? ActiveGame.fromJson(savedMap) : null);
 
     game = ConnectFour(initialGame: startingGame);
+  }
+
+  void setupNewGame() {
+    // Hive'dan veriyi temizle
+    HiveService.deleteData('current_game');
+
+    // ConnectFour oyununu parametresiz (null) başlatarak sıfırla
+    _initGame(null);
+
+    // Seçili aksiyonları temizle
+    selectedAction = null;
+
+    // Arayüzü haberdar et
+    notifyListeners();
   }
 
   Future<void> selectAction(ActionType action, BuildContext context) async {

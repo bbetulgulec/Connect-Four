@@ -40,7 +40,7 @@ class LoginView extends StatelessWidget {
                     color: AppColor.redButton,
                     onPressed: () {
                       provider.longAlarmBuzz();
-                      provider.contuniePage();
+                      provider.contuniePage(context);
                     },
                   ),
 
@@ -51,7 +51,8 @@ class LoginView extends StatelessWidget {
                     color: AppColor.yellow,
                     onPressed: () async {
                       provider.longAlarmBuzz();
-                      provider.newGame();
+
+                      provider.newGame(context);
                     },
                   ),
                 ],

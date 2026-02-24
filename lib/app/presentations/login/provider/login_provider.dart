@@ -1,9 +1,11 @@
+import 'package:connect_four/app/presentations/main/provider/main_provider.dart';
 import 'package:connect_four/core/service/hive_service.dart';
 import 'package:connect_four/app/presentations/main/view/main_screen.dart';
 import 'package:connect_four/core/helper/nav_helper/navigation_helper.dart';
 import 'package:connect_four/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:provider/provider.dart';
 import 'package:vibration/vibration.dart';
 import 'package:vibration/vibration_presets.dart';
 
@@ -19,19 +21,27 @@ class LoginProvider extends ChangeNotifier {
     _loadSettings();
   }
 
-  void contuniePage() {
+  void contuniePage(BuildContext context) {
     final savedData = HiveService.getData('current_game');
 
     if (savedData != null && savedData['isGameOver'] != true) {
       Navigation.pushAndRemoveAll(page: MainScreen());
     } else {
-      newGame();
+      newGame(context);
     }
   }
 
-  Future<void> newGame() async {
+  // LoginProvider.dart içinde
+
+  Future<void> newGame(BuildContext context) async {
+    // 1. Önce Hive'daki eski oyunu sil
     await HiveService.deleteData('current_game');
 
+    // 2. MainProvider'a ulaşıp oyunu sıfırla (burada context artık parametreden geliyor)
+    // ignore: use_build_context_synchronously
+    context.read<MainProvider>().setupNewGame();
+
+    // 3. Oyun ekranına git
     Navigation.pushAndRemoveAll(page: const MainScreen());
   }
 
