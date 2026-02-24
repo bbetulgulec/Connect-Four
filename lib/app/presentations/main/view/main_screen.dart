@@ -49,9 +49,8 @@ class MainScreen extends StatelessWidget {
                   ScorText(title: 'SCORE', notifier: game.scoreNotifier),
                   ScorText(
                     title: 'BEST',
-                    notifier: ValueNotifier<int>(
-                      HiveService.getData('game_progress')?['highScore'] ?? 0,
-                    ),
+                    notifier: game
+                        .bestScoreNotifier, 
                   ),
                 ],
               ),

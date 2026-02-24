@@ -183,21 +183,19 @@ class MainProvider extends ChangeNotifier {
   }
 
   Future<void> _showRewardedAd(ActionType action) async {
-    RewardedAd.load(
-      adUnitId: "ca-app-pub-8804562918756370/2577297808",
+    RewardedInterstitialAd.load(
+      adUnitId: "ca-app-pub-8804562918756370/1362185410",
       request: const AdRequest(),
-      rewardedAdLoadCallback: RewardedAdLoadCallback(
-        onAdLoaded: (RewardedAd ad) {
-          debugPrint('Ad loaded');
-
+      rewardedInterstitialAdLoadCallback: RewardedInterstitialAdLoadCallback(
+        onAdLoaded: (RewardedInterstitialAd ad) {
           ad.fullScreenContentCallback = FullScreenContentCallback(
             onAdDismissedFullScreenContent: (ad) {
-              _isAdShowing = false; // 🔥 KRİTİK
+              _isAdShowing = false;
               notifyListeners();
               ad.dispose();
             },
             onAdFailedToShowFullScreenContent: (ad, error) {
-              _isAdShowing = false; // 🔥 KRİTİK
+              _isAdShowing = false;
               notifyListeners();
               ad.dispose();
             },
@@ -205,18 +203,15 @@ class MainProvider extends ChangeNotifier {
 
           ad.show(
             onUserEarnedReward: (ad, reward) async {
-              debugPrint('Reward earned');
-
               await HiveService.addSkill(action);
-
-              _isAdShowing = false; // 🔥 KRİTİK
+              _isAdShowing = false;
               notifyListeners();
             },
           );
         },
         onAdFailedToLoad: (LoadAdError error) {
           debugPrint('Ad failed to load: $error');
-          _isAdShowing = false; // 🔥 KRİTİK
+          _isAdShowing = false;
           notifyListeners();
         },
       ),

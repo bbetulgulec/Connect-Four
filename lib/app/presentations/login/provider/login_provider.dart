@@ -76,7 +76,7 @@ class LoginProvider extends ChangeNotifier {
     isMuted = !value;
     notifyListeners();
 
-    await HiveService.saveData('voice', {'enabled': value});
+    await HiveService.saveData('voice', {'enabled': isMuted});
 
     if (value) {
       await mainPlayer.setVolume(1.0);

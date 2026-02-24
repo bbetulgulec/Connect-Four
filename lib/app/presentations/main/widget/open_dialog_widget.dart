@@ -154,6 +154,8 @@ class _OpenDialogWidgetState extends State<OpenDialogWidget> {
     }
   }
 
+  
+
   String _getTitle(ActionType action) {
     switch (action) {
       case ActionType.swap:

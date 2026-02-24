@@ -45,6 +45,11 @@ class ConnectFour extends FlameGame with TapCallbacks {
 
   final ActiveGame? initialGame;
 
+  // Mevcut scoreNotifier'ın altına ekle
+  final ValueNotifier<int> bestScoreNotifier = ValueNotifier<int>(
+    HiveService.getData('game_progress')?['highScore'] ?? 0,
+  );
+
   ConnectFour({this.initialGame});
 
   void resetGame() {
@@ -162,9 +167,11 @@ class ConnectFour extends FlameGame with TapCallbacks {
             final currentProgress = HiveService.getProgress();
             final currentScore = scoreNotifier.value;
 
-            // En yüksek skor kontrolü
-            if (currentScore > (currentProgress['highScore'] ?? 0)) {
+            int bestMoves = currentProgress['highScore'] ?? 999;
+
+            if (currentScore < bestMoves || bestMoves == 0) {
               currentProgress['highScore'] = currentScore;
+              bestScoreNotifier.value = currentScore;
             }
 
             // Coin ekleme
