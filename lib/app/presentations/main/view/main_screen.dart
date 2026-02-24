@@ -1,7 +1,6 @@
 import 'package:connect_four/app/presentations/main/widget/banner_add_widget.dart';
 import 'package:connect_four/app/presentations/main/widget/tabbar_widget.dart';
 import 'package:connect_four/core/extensions/build_context_extensions.dart';
-import 'package:connect_four/core/service/hive_service.dart';
 import 'package:connect_four/app/presentations/main/provider/main_provider.dart';
 import 'package:connect_four/app/presentations/main/widget/connect_four.dart';
 import 'package:connect_four/app/presentations/main/widget/icon_widget.dart';
@@ -22,6 +21,9 @@ class MainScreen extends StatelessWidget {
     final provider = context.read<MainProvider>();
     final game = provider.game;
 
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      provider.checkAndShowTutorial(context);
+    });
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -47,11 +49,7 @@ class MainScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   ScorText(title: 'SCORE', notifier: game.scoreNotifier),
-                  ScorText(
-                    title: 'BEST',
-                    notifier: game
-                        .bestScoreNotifier, 
-                  ),
+                  ScorText(title: 'BEST', notifier: game.bestScoreNotifier),
                 ],
               ),
             ),

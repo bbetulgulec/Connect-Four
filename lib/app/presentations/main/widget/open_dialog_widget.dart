@@ -1,15 +1,19 @@
 import 'dart:ui';
 
+import 'package:connect_four/app/common/color/app_color.dart';
 import 'package:connect_four/app/presentations/main/view/main_screen.dart';
+import 'package:connect_four/app/presentations/main/widget/build_arrow.dart';
 import 'package:connect_four/app/presentations/main/widget/row_column_explosion_demo_game.dart';
 import 'package:connect_four/app/presentations/main/widget/single_explosion_demo_game.dart';
 import 'package:connect_four/app/presentations/main/widget/swap_demo_game.dart';
 import 'package:connect_four/app/presentations/main/widget/undo_demo_game.dart';
+import 'package:connect_four/core/extensions/asset_extension.dart';
+import 'package:connect_four/core/extensions/build_context_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flame/game.dart';
 
 class OpenDialogWidget extends StatefulWidget {
-  final ActionType initialAction; // İlk hangi yetenekle açılsın?
+  final ActionType initialAction;
 
   const OpenDialogWidget({super.key, required this.initialAction});
 
@@ -19,12 +23,11 @@ class OpenDialogWidget extends StatefulWidget {
 
 class _OpenDialogWidgetState extends State<OpenDialogWidget> {
   late PageController _pageController;
-  int _currentPage = 0;
+  late int _currentPage;
 
   @override
   void initState() {
     super.initState();
-    // İlk açılacak sayfayı bul
     _currentPage = ActionType.values.indexOf(widget.initialAction);
     _pageController = PageController(initialPage: _currentPage);
   }
@@ -34,67 +37,122 @@ class _OpenDialogWidgetState extends State<OpenDialogWidget> {
     return Dialog(
       backgroundColor: Colors.transparent,
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-
+        borderRadius: BorderRadius.circular(24),
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-            decoration: BoxDecoration(
-              color: Colors.white.withAlpha(55),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white.withAlpha(60)),
-            ),
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: SizedBox(
+            height: context.height280 * 2,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                SizedBox(
-                  height: 280, 
-                  child: PageView.builder(
-                    controller: _pageController,
-                    onPageChanged: (index) =>
-                        setState(() => _currentPage = index),
-                    itemCount: ActionType.values.length,
-                    itemBuilder: (context, index) {
-                      final action = ActionType.values[index];
-                      return Column(
-                        children: [
-                          // Oyun Demosu
-                          SizedBox(
-                            width: 200,
-                            height: 180,
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(16),
-                              child: GameWidget(game: _buildGame(action)),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          // Açıklama Metni
-                          Text(
-                            _getTitle(action),
-                            style: const TextStyle(
-                              color: Colors.redAccent,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            _getDescription(action),
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
-                      );
-                    },
+                Expanded(
+                  child: Row(
+                    children: [
+                      /// SOL OK
+                      BuildArrow(
+                        icon: Icons.arrow_back_ios_rounded,
+                        enabled: _currentPage > 0,
+                        onTap: () {
+                          if (_currentPage > 0) {
+                            _pageController.previousPage(
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
+                            );
+                          }
+                        },
+                      ),
+
+                      /// PAGEVIEW
+                      Expanded(
+                        child: PageView.builder(
+                          controller: _pageController,
+                          onPageChanged: (index) {
+                            setState(() => _currentPage = index);
+                          },
+                          itemCount: ActionType.values.length,
+                          itemBuilder: (context, index) {
+                            final action = ActionType.values[index];
+
+                            return SingleChildScrollView(
+                              child: Column(
+                                children: [
+                                  /// ICON
+                                  Container(
+                                    width: context.width80,
+                                    height: context.height80,
+                                    padding: EdgeInsets.only(
+                                      top: context.height10,
+                                    ),
+                                    child: Image.asset(_iconPath(action)),
+                                  ),
+                                  SizedBox(height: context.height10),
+
+                                  /// DEMO
+                                  SizedBox(
+                                    height: context.height200,
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(16),
+                                      child: GameWidget(
+                                        game: _buildGame(action),
+                                      ),
+                                    ),
+                                  ),
+
+                                  SizedBox(height: context.height20),
+
+                                  /// TITLE
+                                  Text(
+                                    _getTitle(action),
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColor.redAccent,
+                                    ),
+                                  ),
+
+                                  SizedBox(height: context.height20),
+
+                                  /// DESCRIPTION
+                                  Text(
+                                    _getDescription(action),
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.white70,
+                                    ),
+                                  ),
+
+                                  SizedBox(height: context.height20),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+
+                      /// SAĞ OK
+                      BuildArrow(
+                        icon: Icons.arrow_forward_ios_rounded,
+                        enabled: _currentPage < ActionType.values.length - 1,
+                        onTap: () {
+                          if (_currentPage < ActionType.values.length - 1) {
+                            _pageController.nextPage(
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
+                            );
+                          }
+                        },
+                      ),
+                    ],
                   ),
                 ),
 
-                /// Sayfa Göstergeleri (Noktalar)
+                SizedBox(height: context.height20),
+
+                /// =======================
+                /// DOT INDICATOR
+                /// =======================
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: List.generate(
@@ -103,12 +161,12 @@ class _OpenDialogWidgetState extends State<OpenDialogWidget> {
                       duration: const Duration(milliseconds: 300),
                       margin: const EdgeInsets.symmetric(horizontal: 4),
                       height: 8,
-                      width: _currentPage == index ? 20 : 8,
+                      width: _currentPage == index ? 24 : 8,
                       decoration: BoxDecoration(
                         color: _currentPage == index
                             ? Colors.redAccent
-                            : Colors.grey,
-                        borderRadius: BorderRadius.circular(4),
+                            : Colors.white24,
+                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
                   ),
@@ -116,20 +174,30 @@ class _OpenDialogWidgetState extends State<OpenDialogWidget> {
 
                 const SizedBox(height: 20),
 
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 76, 175, 173),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    minimumSize: const Size(double.infinity, 45),
+                /// =======================
+                /// BUTTON
+                /// =======================
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.symmetric(
+                    vertical: context.height12,
+                    horizontal: context.width12,
                   ),
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text(
-                    "ANLADIM",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color.fromARGB(255, 76, 175, 173),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text(
+                      "ANLADIM",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        fontSize: 15,
+                      ),
                     ),
                   ),
                 ),
@@ -154,7 +222,18 @@ class _OpenDialogWidgetState extends State<OpenDialogWidget> {
     }
   }
 
-  
+  String _iconPath(ActionType action) {
+    switch (action) {
+      case ActionType.singleExplosion:
+        return AssetImages.block_1explosion.path(AssetType.png);
+      case ActionType.rowColumnExplosion:
+        return AssetImages.column_1row_1deletion.path(AssetType.png);
+      case ActionType.swap:
+        return AssetImages.swap.path(AssetType.png);
+      case ActionType.undo:
+        return AssetImages.undo_1move.path(AssetType.png);
+    }
+  }
 
   String _getTitle(ActionType action) {
     switch (action) {

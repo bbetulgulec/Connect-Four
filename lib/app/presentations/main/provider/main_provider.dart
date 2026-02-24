@@ -1,5 +1,6 @@
 import 'package:connect_four/app/data/models/active_game.dart';
 import 'package:connect_four/app/presentations/main/widget/award_winning_abs_dialog.dart';
+import 'package:connect_four/app/presentations/main/widget/open_dialog_widget.dart';
 import 'package:connect_four/core/service/hive_service.dart';
 import 'package:connect_four/app/presentations/main/view/main_screen.dart';
 import 'package:connect_four/app/presentations/main/widget/connect_four.dart';
@@ -216,5 +217,23 @@ class MainProvider extends ChangeNotifier {
         },
       ),
     );
+  }
+
+  void checkAndShowTutorial(BuildContext context) {
+    final bool hasSeenTutorial =
+        HiveService.getData('settings')?['tutorialSeen'] ?? false;
+
+    if (!hasSeenTutorial) {
+      // Diyaloğu göster
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) =>
+            const OpenDialogWidget(initialAction: ActionType.singleExplosion),
+      ).then((_) {
+        // Diyalog kapandığında (Anladım'a basıldığında) Hive'a kaydet
+        HiveService.saveData('settings', {'tutorialSeen': true});
+      });
+    }
   }
 }
