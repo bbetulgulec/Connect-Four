@@ -30,6 +30,7 @@ dependencies:
   provider: ^6.1.5+1
   equatable: ^2.0.8
   google_mobile_ads: ^6.0.0
+  timezone: ^0.10.1
 
 
 dev_dependencies:
@@ -47,12 +48,17 @@ flutter:
     - assets/image/
     - assets/fonts/
     - assets/wav/
+    - assets/lang/
   fonts:
     - family: RubikSpray
       fonts:
         - asset: assets/fonts/RubikSprayPaint-Regular.ttf
     #       - asset: fonts/Schyler-Italic.ttf
     #         style: italic
+
     - family: Nunito
       fonts:
         - asset: assets/fonts/Nunito-Bold.ttf
+    - family: Orbitron
+      fonts:
+        - asset: assets/fonts/Orbitron-Medium.ttf

@@ -9,6 +9,7 @@ import 'package:connect_four/app/presentations/main/widget/swap_demo_game.dart';
 import 'package:connect_four/app/presentations/main/widget/undo_demo_game.dart';
 import 'package:connect_four/core/extensions/asset_extension.dart';
 import 'package:connect_four/core/extensions/build_context_extensions.dart';
+import 'package:connect_four/core/localization/app_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flame/game.dart';
 
@@ -191,8 +192,8 @@ class _OpenDialogWidgetState extends State<OpenDialogWidget> {
                       ),
                     ),
                     onPressed: () => Navigator.pop(context),
-                    child: const Text(
-                      "ANLADIM",
+                    child: Text(
+                      AppLocalization.translate("ıGetIt"),
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
@@ -238,26 +239,27 @@ class _OpenDialogWidgetState extends State<OpenDialogWidget> {
   String _getTitle(ActionType action) {
     switch (action) {
       case ActionType.swap:
-        return "Taş Değiştir";
+        return AppLocalization.translate("swapDemoSwap");
+
       case ActionType.singleExplosion:
-        return "Tekli Patlama";
+        return AppLocalization.translate("singleExplosion");
       case ActionType.rowColumnExplosion:
-        return "Sıra Temizle";
+        return AppLocalization.translate("rowColumnExplosion");
       case ActionType.undo:
-        return "Geri Al";
+        return AppLocalization.translate("undo");
     }
   }
 
   String _getDescription(ActionType action) {
     switch (action) {
       case ActionType.swap:
-        return "İstediğin iki taşın yerini\nanında değiştirir.";
+        return AppLocalization.translate("swapDemoSwapDesciription");
       case ActionType.singleExplosion:
-        return "Seçtiğin herhangi bir taşı\ntahtadan siler.";
+        return AppLocalization.translate("singleExplosionDesciription");
       case ActionType.rowColumnExplosion:
-        return "Dikey ve yatay tüm hattı\ntek seferde patlatır.";
+        return AppLocalization.translate("rowColumnExplosionDesciription");
       case ActionType.undo:
-        return "Yaptığın son hamleyi\nhiç olmamış gibi geri sarar.";
+        return AppLocalization.translate("undoDesciription");
     }
   }
 }

@@ -9,6 +9,9 @@ import 'package:provider/provider.dart';
 import 'package:vibration/vibration.dart';
 import 'package:vibration/vibration_presets.dart';
 
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
+
 class LoginProvider extends ChangeNotifier {
   bool isMuted = false;
   bool isClosedVibration = false;
@@ -37,8 +40,6 @@ class LoginProvider extends ChangeNotifier {
     // 1. Önce Hive'daki eski oyunu sil
     await HiveService.deleteData('current_game');
 
-    // 2. MainProvider'a ulaşıp oyunu sıfırla (burada context artık parametreden geliyor)
-    // ignore: use_build_context_synchronously
     context.read<MainProvider>().setupNewGame();
 
     // 3. Oyun ekranına git
@@ -64,22 +65,42 @@ class LoginProvider extends ChangeNotifier {
     await HiveService.saveData('notifications', {'enabled': value});
 
     if (value) {
-      await flutterLocalNotificationsPlugin.show(
+      await flutterLocalNotificationsPlugin.zonedSchedule(
         id: 0,
-        title: 'Bildirimler Açık',
-        body: 'Oyundan bildirimler artık aktif!',
+        title: 'Günlük Hatırlatma ',
+        body: ' Oyuna girip günlük ödülünü almayı unutma',
+        scheduledDate: _nextInstanceOfTenAM(),
         notificationDetails: const NotificationDetails(
           android: AndroidNotificationDetails(
-            'your_channel_id',
-            'your_channel_name',
+            'daily_channel_id',
+            'Daily Notifications',
             importance: Importance.max,
             priority: Priority.high,
           ),
         ),
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        matchDateTimeComponents: DateTimeComponents.time,
       );
     } else {
       await flutterLocalNotificationsPlugin.cancelAll();
     }
+  }
+
+  tz.TZDateTime _nextInstanceOfTenAM() {
+    final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
+    tz.TZDateTime scheduledDate = tz.TZDateTime(
+      tz.local,
+      now.year,
+      now.month,
+      now.day,
+      14,
+    );
+
+    if (scheduledDate.isBefore(now)) {
+      scheduledDate = scheduledDate.add(const Duration(days: 1));
+    }
+
+    return scheduledDate;
   }
 
   Future<void> voiceSwitch(bool value) async {

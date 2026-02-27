@@ -1,9 +1,8 @@
 import 'dart:math' as math;
 
 import 'package:confetti/confetti.dart';
-import 'package:connect_four/app/presentations/main/provider/main_provider.dart';
+import 'package:connect_four/core/localization/app_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 enum GameResult { win, lose, noSpace }
 
@@ -37,15 +36,12 @@ class _DialogWidgetState extends State<DialogWidget> {
     }
   }
 
- 
-
   @override
-void dispose() {
-  _confettiController.dispose();
+  void dispose() {
+    _confettiController.dispose();
 
-  
-  super.dispose();
-}
+    super.dispose();
+  }
 
   Path drawStar(Size size) {
     double degToRad(double deg) => deg * (math.pi / 180.0);
@@ -84,21 +80,21 @@ void dispose() {
     switch (widget.result) {
       case GameResult.win:
         mainColor = Colors.greenAccent;
-        title = "YOU WIN!";
-        subtitle = "Master of the tiles!\nYou dominated the board.";
-        buttonText = "PLAY AGAIN";
+        title = AppLocalization.translate("youWin");
+        subtitle = AppLocalization.translate("winsubtitle");
+        buttonText = AppLocalization.translate("tryAgain");
         break;
       case GameResult.lose:
         mainColor = Colors.redAccent;
-        title = "GAME OVER";
-        subtitle = "Tactics failed this time.\nTry a new strategy!";
-        buttonText = "TRY AGAIN";
+        title = AppLocalization.translate("gameOver");
+        subtitle = AppLocalization.translate("gameOverSubtitle");
+        buttonText =  AppLocalization.translate("tryAgain");
         break;
       case GameResult.noSpace:
         mainColor = Colors.orangeAccent;
-        title = "NO SPACE!";
-        subtitle = "The board is full.\nIt's a tactical deadlock!";
-        buttonText = "RESET BOARD";
+        title =  AppLocalization.translate("noSpace");
+        subtitle = AppLocalization.translate("noSpaceSubtitle");
+        buttonText =  AppLocalization.translate("resetBoard");
         break;
     }
 

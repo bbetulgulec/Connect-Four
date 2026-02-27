@@ -43,9 +43,28 @@ class HiveService {
   static Map<String, dynamic> getProgress() {
     final data = getData('game_progress');
     if (data != null) return data;
+    if (data != null) return Map<String, dynamic>.from(data);
 
     // Eğer henüz kayıt yoksa varsayılan değerler
-    return {'highScore': 0, 'lastScore': 0, 'coins': 0};
+    return {'highScore': 0, 'lastScore': 0, 'coins': 0, 'currentLevel': 1};
+  }
+
+  // Mevcut Level'ı getirir
+  static int getLevel() {
+    final progress = getProgress();
+    return progress['currentLevel'] ?? 1;
+  }
+
+  // Level'ı 1 artırır
+  static Future<void> incrementLevel() async {
+    final progress = getProgress();
+    int current = progress['currentLevel'] ?? 1;
+    progress['currentLevel'] = current + 1;
+
+    // Ayrıca her level atladığında ödül vermek istersen buraya ekleyebilirsin
+    progress['coins'] = (progress['coins'] ?? 0) + 20;
+
+    await saveProgress(progress);
   }
 
   // Progress kaydetmek için yardımcı metod
@@ -98,6 +117,5 @@ class HiveService {
       skills[mode.name] = skills[mode.name]! - 1;
       await box.put('skills', skills);
     }
-    
   }
 }

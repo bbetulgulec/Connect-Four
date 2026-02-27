@@ -1,11 +1,13 @@
+import 'package:connect_four/app/common/color/app_color.dart';
+import 'package:connect_four/app/common/widget/text_title.dart';
 import 'package:connect_four/app/presentations/main/widget/banner_add_widget.dart';
 import 'package:connect_four/app/presentations/main/widget/tabbar_widget.dart';
 import 'package:connect_four/core/extensions/build_context_extensions.dart';
 import 'package:connect_four/app/presentations/main/provider/main_provider.dart';
 import 'package:connect_four/app/presentations/main/widget/connect_four.dart';
 import 'package:connect_four/app/presentations/main/widget/icon_widget.dart';
-import 'package:connect_four/app/presentations/main/widget/scor_text_widget.dart';
 import 'package:connect_four/core/extensions/asset_extension.dart';
+import 'package:connect_four/core/localization/app_localization.dart';
 import 'package:connect_four/core/service/hive_service.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
@@ -69,12 +71,24 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
             /// SCORE BAR
             Padding(
-              padding: const EdgeInsets.only(right: 20, left: 20),
+              padding: EdgeInsets.symmetric(horizontal: context.width20),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  ScorText(title: 'SCORE', notifier: game.scoreNotifier),
-                  ScorText(title: 'BEST', notifier: game.bestScoreNotifier),
+                  TextTitle.futu(
+                    title: AppLocalization.translate("score"),
+                    notifier: game.scoreNotifier,
+                    color: AppColor.yellow,
+                  ),
+                  TextTitle.futu(
+                    title: AppLocalization.translate("level"),
+                    notifier: game.levelNotifier,
+                    color: AppColor.turquoise,
+                  ),
+                  TextTitle.futu(
+                    title: AppLocalization.translate("best"),
+                    notifier: game.bestScoreNotifier,
+                  ),
                 ],
               ),
             ),

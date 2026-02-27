@@ -50,6 +50,11 @@ class ConnectFour extends FlameGame with TapCallbacks {
     HiveService.getData('game_progress')?['highScore'] ?? 0,
   );
 
+  final ValueNotifier<int> levelNotifier = ValueNotifier<int>(
+    HiveService.getLevel(),
+  );
+
+  int get level => levelNotifier.value;
   ConnectFour({this.initialGame});
 
   void resetGame() {
@@ -163,6 +168,9 @@ class ConnectFour extends FlameGame with TapCallbacks {
 
           // Eski storage yerine yeni servisimizi kullanıyoruz
           if (isWin) {
+            HiveService.incrementLevel();
+            levelNotifier.value = HiveService.getLevel();
+
             final currentProgress = HiveService.getProgress();
             final currentScore = scoreNotifier.value;
 
@@ -231,9 +239,25 @@ class ConnectFour extends FlameGame with TapCallbacks {
 
     if (isGameOver) return;
 
-    final aiColumn = LocalAiService.getBestMove(board);
-    _dropPiece(aiColumn, 2);
+    // 1️⃣ Oyuncu seviyesini veya oyun level'ını AI'ya gönder
+    // Örnek: player1Score'u level olarak kullanabilirsin
+    int aiLevel = level; // basit level artışı örneği
 
+    final aiColumn = LocalAiService.getBestMove(board, aiLevel);
+    _dropPiece(aiColumn, LocalAiService.aiPlayer);
+
+    // 2️⃣ AI hamlesi sonrası kazanma kontrolü
+    if (_checkWin(LocalAiService.aiPlayer)) {
+      isGameOver = true;
+
+      // AI kazandıysa overlay göster
+      overlays.add('LoseOverlay');
+
+      // Kaydetme veya coin ekleme opsiyonel
+      HiveService.deleteActiveGame();
+    }
+
+    // 3️⃣ AI hamlesi sonrası sıra tekrar oyuncuya geçer
     if (!isGameOver) {
       isPlayerTurn = true;
       isSingleExplosion = false;
@@ -404,8 +428,9 @@ class ConnectFour extends FlameGame with TapCallbacks {
   Future<void> undoLastMove() async {
     if (lastPlayerPiece == null ||
         lastPlayerRow == null ||
-        lastPlayerCol == null)
+        lastPlayerCol == null) {
       return;
+    }
 
     final piece = lastPlayerPiece!;
 

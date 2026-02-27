@@ -1,4 +1,7 @@
+import 'dart:ui';
+
 import 'package:audioplayers/audioplayers.dart';
+import 'package:connect_four/core/localization/app_localization.dart';
 import 'package:connect_four/core/service/hive_service.dart';
 import 'package:connect_four/app/presentations/login/provider/login_provider.dart';
 import 'package:connect_four/app/presentations/login/view/login_view.dart';
@@ -11,6 +14,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:provider/provider.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:timezone/data/latest.dart' as tz;
 
 final AudioPlayer mainPlayer = AudioPlayer();
 
@@ -23,6 +27,9 @@ FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await MobileAds.instance.initialize();
+  String deviceLang = PlatformDispatcher.instance.locale.languageCode;
+  await AppLocalization.load(deviceLang);
+  tz.initializeTimeZones();
 
   const AndroidInitializationSettings initializationSettingsAndroid =
       AndroidInitializationSettings('notification_icon');

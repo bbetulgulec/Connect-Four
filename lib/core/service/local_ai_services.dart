@@ -5,29 +5,54 @@ class LocalAiService {
   static const int cols = 7;
   static const int aiPlayer = 2;
   static const int humanPlayer = 1;
-  static const int maxDepth = 6; // 5-7 ideal
 
-  static int getBestMove(List<List<int>> board) {
+  // ---------------- LEVEL BAZLI DERİNLİK ----------------
+  static int getMaxDepthForLevel(int level) {
+    if (level <= 3) return 2; // 1-3 Arası: AI sadece kendi hamlesini görür.
+    if (level <= 9) return 3; // 4-9 Arası: AI 1 hamle sonrasını da hesaplar.
+    if (level <= 17) return 4; // 10-17 Arası: AI 2-3 hamle sonrasını görür.
+    if (level <= 30) return 5; // 18-25 Arası: Ciddi rakip.
+    return 6; // 36+: Hatasız usta.
+  }
+
+  // ---------------- EN İYİ HAMLE ----------------
+  static int getBestMove(List<List<int>> board, int level) {
+    Random random = Random();
+
+    // Level'a göre hata ihtimali belirle
+    int errorChance = 0;
+    if (level <= 3) {
+      errorChance = 20; // %50 hata yapar
+    } else if (level <= 9) {
+      errorChance = 10; // %30 hata yapar
+    } else if (level <= 17) {
+      errorChance = 5; // %15 hata yapar
+    }
+
+    // Eğer zar hata ihtimalinden düşük gelirse rastgele oyna
+    if (random.nextInt(100) < errorChance) {
+      List<int> moves = _validMoves(board);
+      return moves[random.nextInt(moves.length)];
+    }
+
+    // Normal Minimax süreci (Hata yapmazsa)
     int bestScore = -999999;
-    int bestCol = 0;
+    int bestCol = _validMoves(board)[0];
+    int depth = getMaxDepthForLevel(level);
 
     for (int col in _validMoves(board)) {
       final copy = _copyBoard(board);
       _drop(copy, col, aiPlayer);
-
-      int score = _minimax(copy, maxDepth - 1, -1000000, 1000000, false);
-
+      int score = _minimax(copy, depth - 1, -1000000, 1000000, false);
       if (score > bestScore) {
         bestScore = score;
         bestCol = col;
       }
     }
-
     return bestCol;
   }
 
   // ---------------- MINIMAX ----------------
-
   static int _minimax(
     List<List<int>> board,
     int depth,
@@ -35,8 +60,10 @@ class LocalAiService {
     int beta,
     bool maximizing,
   ) {
-    if (_checkWin(board, aiPlayer)) return 100000;
-    if (_checkWin(board, humanPlayer)) return -100000;
+    if (_checkWin(board, aiPlayer)) return 1000000; // AI kazanırsa max skor
+    if (_checkWin(board, humanPlayer)) {
+      return -1000000; // İnsan kazanırsa min skor
+    }
     if (depth == 0 || _validMoves(board).isEmpty) {
       return _evaluateBoard(board);
     }
@@ -65,11 +92,9 @@ class LocalAiService {
   }
 
   // ---------------- HEURISTIC ----------------
-
   static int _evaluateBoard(List<List<int>> board) {
     int score = 0;
 
-    // Merkez kontrolü
     int centerCol = cols ~/ 2;
     int centerCount = 0;
     for (int r = 0; r < rows; r++) {
@@ -77,7 +102,6 @@ class LocalAiService {
     }
     score += centerCount * 6;
 
-    // Tüm window'ları kontrol et
     for (int r = 0; r < rows; r++) {
       for (int c = 0; c < cols; c++) {
         score += _evaluateWindow(board, r, c, 1, 0);
@@ -105,30 +129,30 @@ class LocalAiService {
       int nr = r + dr * i;
       int nc = c + dc * i;
 
-      if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) {
-        return 0;
-      }
+      if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) return 0;
 
-      if (board[nr][nc] == aiPlayer)
+      if (board[nr][nc] == aiPlayer) {
         aiCount++;
-      else if (board[nr][nc] == humanPlayer)
+      } else if (board[nr][nc] == humanPlayer) {
         humanCount++;
-      else
+      } else {
         empty++;
+      }
     }
 
-    if (aiCount == 4) return 100000;
-    if (aiCount == 3 && empty == 1) return 100;
-    if (aiCount == 2 && empty == 2) return 10;
+    // 1️⃣ AI kazanma fırsatları
+    if (aiCount == 4) return 1000000;
+    if (aiCount == 3 && empty == 1) return 1000;
+    if (aiCount == 2 && empty == 2) return 50;
 
-    if (humanCount == 3 && empty == 1) return -120;
-    if (humanCount == 2 && empty == 2) return -10;
+    // 2️⃣ İnsan kazanma engelleme (defans)
+    if (humanCount == 3 && empty == 1) return 900;
+    if (humanCount == 2 && empty == 2) return 30;
 
     return 0;
   }
 
   // ---------------- HELPERS ----------------
-
   static List<int> _validMoves(List<List<int>> board) {
     List<int> moves = [];
     for (int c = 0; c < cols; c++) {
@@ -175,7 +199,6 @@ class LocalAiService {
     for (int i = 0; i < 4; i++) {
       int nr = r + dr * i;
       int nc = c + dc * i;
-
       if (nr < 0 ||
           nr >= rows ||
           nc < 0 ||

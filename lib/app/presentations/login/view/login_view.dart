@@ -6,6 +6,7 @@ import 'package:connect_four/app/presentations/login/widget/setting_button.dart'
 import 'package:connect_four/app/presentations/login/widget/title_widget.dart';
 import 'package:connect_four/core/extensions/asset_extension.dart';
 import 'package:connect_four/core/extensions/build_context_extensions.dart';
+import 'package:connect_four/core/localization/app_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -36,7 +37,7 @@ class LoginView extends StatelessWidget {
                   SizedBox(height: context.height32),
 
                   MaterialButtonWidget(
-                    text: "Devam Et",
+                    text: AppLocalization.translate("continue"),
                     color: AppColor.redButton,
                     onPressed: () {
                       provider.longAlarmBuzz();
@@ -47,7 +48,7 @@ class LoginView extends StatelessWidget {
                   SizedBox(height: context.height16),
 
                   MaterialButtonWidget(
-                    text: "Yeni Oyun",
+                    text: AppLocalization.translate("newGame"),
                     color: AppColor.yellow,
                     onPressed: () async {
                       provider.longAlarmBuzz();

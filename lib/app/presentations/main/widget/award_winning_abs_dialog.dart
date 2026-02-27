@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:connect_four/core/localization/app_localization.dart';
 import 'package:flutter/material.dart';
 
 class AwardWinningAbsDialog extends StatelessWidget {
@@ -34,7 +35,7 @@ class AwardWinningAbsDialog extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Hakkınız bulunmamaktadır. Reklam izleyip elde edebilrisiniz.',
+                  AppLocalization.translate("absDialog"),
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 16,
@@ -48,7 +49,7 @@ class AwardWinningAbsDialog extends StatelessWidget {
                     TextButton(
                       onPressed: close,
                       child: Text(
-                        "Kapat",
+                        AppLocalization.translate("close"),
                         style: TextStyle(
                           color: Colors.redAccent,
                           fontSize: 12,
@@ -60,7 +61,7 @@ class AwardWinningAbsDialog extends StatelessWidget {
                     TextButton(
                       onPressed: watch,
                       child: Text(
-                        "Reklam İzle",
+                        AppLocalization.translate("watchAdvertisement"),
                         style: TextStyle(
                           color: Colors.greenAccent,
                           fontSize: 12,

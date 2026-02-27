@@ -1,4 +1,5 @@
 import 'package:connect_four/core/extensions/asset_extension.dart';
+import 'package:connect_four/core/localization/app_localization.dart';
 
 class OnboardingItem {
   final String text;
@@ -11,15 +12,15 @@ class OnboardingItem {
 }
 final List<OnboardingItem> onboardingItems = [
   OnboardingItem(
-    text: "Connect Four Challenge'a Hoşgeldiniz",
+    text: AppLocalization.translate("onboardingWelcome"),
     image: AssetImages.onboarding_1,
   ),
   OnboardingItem(
-    text: "Arkadaşlarınla rekabet et",
+    text: AppLocalization.translate("onboardingFriendFight"),
     image: AssetImages.onboarding_2,
   ),
   OnboardingItem(
-    text: "Kazanmaya hazır mısın ?",
+    text: AppLocalization.translate("onboardingReady"),
     image: AssetImages.onboarding_3,
   ),
 ];

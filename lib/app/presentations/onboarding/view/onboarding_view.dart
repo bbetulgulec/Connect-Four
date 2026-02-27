@@ -1,7 +1,9 @@
 import 'package:connect_four/app/presentations/login/view/login_view.dart';
 import 'package:connect_four/app/presentations/onboarding/provider/onboarding_provider.dart';
+import 'package:connect_four/app/presentations/onboarding/widget/onboarding_text.dart';
 import 'package:connect_four/core/extensions/build_context_extensions.dart';
 import 'package:connect_four/core/helper/nav_helper/navigation_helper.dart';
+import 'package:connect_four/core/localization/app_localization.dart';
 import 'package:flutter/material.dart';
 
 import 'package:connect_four/app/common/widget/text_title.dart';
@@ -52,7 +54,7 @@ class OnboardingView extends StatelessWidget {
                   ),
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: context.width12),
-                    child: TextTitle(title: item.text),
+                    child: OnboardingText(title: item.text),
                   ),
                 ],
               );
@@ -74,7 +76,7 @@ class OnboardingView extends StatelessWidget {
                         Navigation.pushReplace(page: const LoginView());
                       });
                     },
-                    text: "Devam Et",
+                    text: AppLocalization.translate("continue"),
                   ),
                 ),
               ],

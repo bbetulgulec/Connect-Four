@@ -6,4 +6,6 @@ class AppColor {
   static const Color yellow = Color.fromARGB(255, 233, 221, 8);
   static const Color redAccent = Colors.redAccent;
   static const Color grey = Colors.grey;
+  static const Color black = Colors.black;
+  static const Color turquoise = Color(0xFF66E8F9);
 }

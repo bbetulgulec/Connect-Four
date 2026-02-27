@@ -3,6 +3,7 @@ import 'package:connect_four/app/common/color/app_color.dart';
 import 'package:connect_four/app/presentations/login/provider/login_provider.dart';
 import 'package:connect_four/app/presentations/login/widget/build_setting_row.dart';
 import 'package:connect_four/core/extensions/build_context_extensions.dart';
+import 'package:connect_four/core/localization/app_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -37,7 +38,7 @@ class DialogWidget extends StatelessWidget {
 
                 // BİLDİRİM SWITCH
                 BuildSettingRow(
-                  title: "Bildirimler :",
+                  title: AppLocalization.translate("notification"),
                   value: provider.isNotificationEnabled,
                   onChanged: (bool value) async {
                     await provider.setNotificationEnabled(value);
@@ -46,7 +47,7 @@ class DialogWidget extends StatelessWidget {
 
                 // SES SWITCH
                 BuildSettingRow(
-                  title: "Sesler :",
+                  title: AppLocalization.translate("voice"),
                   value: !provider.isMuted,
                   onChanged: (bool value) async {
                     provider.voiceSwitch(value);
@@ -55,7 +56,7 @@ class DialogWidget extends StatelessWidget {
 
                 // TİTREŞİM SWITCH
                 BuildSettingRow(
-                  title: "Titreşimler :",
+                  title: AppLocalization.translate("vibration"),
                   value: provider.isClosedVibration,
                   onChanged: (bool value) async {
                     provider.vibrationSwitch(value);
@@ -73,10 +74,10 @@ class DialogWidget extends StatelessWidget {
   Widget _buildHeader(BuildContext context) {
     return Row(
       children: [
-        const Expanded(
+        Expanded(
           child: Center(
             child: Text(
-              "Ayarlar",
+              AppLocalization.translate("settings"),
               style: TextStyle(
                 fontFamily: "Nunito",
                 fontSize: 25,
