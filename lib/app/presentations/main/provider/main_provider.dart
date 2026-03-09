@@ -189,7 +189,7 @@ class MainProvider extends ChangeNotifier {
 
   Future<void> _showRewardedAd(ActionType action) async {
     RewardedInterstitialAd.load(
-      adUnitId: "ca-app-pub-8804562918756370/1362185410",
+      adUnitId: "ca-app-pub-8804562918756370/1845484265",
       request: const AdRequest(),
       rewardedInterstitialAdLoadCallback: RewardedInterstitialAdLoadCallback(
         onAdLoaded: (RewardedInterstitialAd ad) {
