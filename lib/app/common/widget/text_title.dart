@@ -42,23 +42,22 @@ class TextTitle extends StatelessWidget {
       return ValueListenableBuilder<int>(
         valueListenable: notifier!,
         builder: (context, value, child) {
-          // Zengin metin yapısı: Başlık ve Sayı farklı stillerde
           return RichText(
             textAlign: TextAlign.center,
             text: TextSpan(
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w900,
-                fontFamily: "Nunito", // Sabit Nunito başlık
-                color: Colors.white, // Sabit Beyaz başlık
+                fontFamily: "Nunito",
+                color: Colors.white,
               ),
               children: [
-                TextSpan(text: title), // Örn: "SCORE: "
+                TextSpan(text: title),
                 TextSpan(
-                  text: " $value", // Örn: " 120"
+                  text: " $value",
                   style: TextStyle(
-                    fontFamily: "Orbitron", // Sayı için fütüristik font
-                    color: textColor, // Factory'den gelen sarı/mavi renk
+                    fontFamily: "Orbitron",
+                    color: textColor,
                     fontFeatures: fontFeatures,
                     letterSpacing: 2.0,
                   ),

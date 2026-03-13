@@ -188,36 +188,20 @@ class MainProvider extends ChangeNotifier {
   }
 
   Future<void> _showRewardedAd(ActionType action) async {
-    RewardedInterstitialAd.load(
-      adUnitId: "ca-app-pub-8804562918756370/1845484265",
+    RewardedAd.load(
+      adUnitId: "ca-app-pub-9341374865552891/4478536403",
       request: const AdRequest(),
-      rewardedInterstitialAdLoadCallback: RewardedInterstitialAdLoadCallback(
-        onAdLoaded: (RewardedInterstitialAd ad) {
-          ad.fullScreenContentCallback = FullScreenContentCallback(
-            onAdDismissedFullScreenContent: (ad) {
-              _isAdShowing = false;
-              notifyListeners();
-              ad.dispose();
-            },
-            onAdFailedToShowFullScreenContent: (ad, error) {
-              _isAdShowing = false;
-              notifyListeners();
-              ad.dispose();
-            },
-          );
-
+      rewardedAdLoadCallback: RewardedAdLoadCallback(
+        onAdLoaded: (RewardedAd ad) {
           ad.show(
             onUserEarnedReward: (ad, reward) async {
               await HiveService.addSkill(action);
-              _isAdShowing = false;
               notifyListeners();
             },
           );
         },
         onAdFailedToLoad: (LoadAdError error) {
-          debugPrint('Ad failed to load: $error');
-          _isAdShowing = false;
-          notifyListeners();
+          debugPrint("Ad failed: $error");
         },
       ),
     );
